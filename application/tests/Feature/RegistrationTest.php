@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use App\Enums\UserRole;
 
 class RegistrationTest extends TestCase
 {
@@ -29,6 +30,8 @@ class RegistrationTest extends TestCase
         $response->assertStatus(201);
         $this->assertDatabaseHas('users', ["email" => $email]);
         $user = User::where("email", $email)->first();
+        $this->assertEquals(UserRole::PARTICIPANT, $user->role);
+        $this->assertFalse($user->is_blocked);
         $this->assertTrue(\Hash::check($password, $user->password));
         $this->assertEquals(Str::lower($email), $user->email);
         \Event::assertDispatched(Registered::class);
