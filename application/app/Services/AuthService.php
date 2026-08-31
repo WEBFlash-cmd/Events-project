@@ -10,6 +10,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Exceptions\BlockedUserException;
 
 class AuthService
 {
@@ -26,6 +27,9 @@ class AuthService
     public function login(LoginData $data): array
     {
         $user = User::where('email', $data->email)->firstOrFail();
+        if ($user->is_blocked === true) {
+            throw new BlockedUserException('Your account is blocked');
+        }
         $user->checkPassword($data->password);
         $token = $user->createToken("login-token");
         return [

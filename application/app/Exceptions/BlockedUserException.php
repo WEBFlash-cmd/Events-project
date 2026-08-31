@@ -2,7 +2,7 @@
 
 namespace App\Exceptions;
 
-class BlockedUserException
+class BlockedUserException extends \Exception
 {
 
 }

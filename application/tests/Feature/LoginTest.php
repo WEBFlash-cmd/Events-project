@@ -72,4 +72,16 @@ class LoginTest extends TestCase
             $response->assertStatus($i < 4 ? 422 : 429);
         }
     }
+
+    public function testBlockedUserCannotLogin()
+    {
+        $user = User::factory()->create([
+            'is_blocked' => true,
+        ]);
+        $response = $this->post("/api/auth/login", [
+            'email' => $user->email,
+            'password' => "password",
+        ]);
+        $response->assertStatus(403);
+    }
 }

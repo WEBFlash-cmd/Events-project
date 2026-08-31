@@ -10,6 +10,8 @@ use App\Http\Requests\AuthRegistration;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use App\Exceptions\BlockedUserException;
+
 
 class AuthController extends Controller
 {
@@ -23,6 +25,8 @@ class AuthController extends Controller
     {
         try {
             return $authService->login($request->toDTO());
+        } catch (BlockedUserException $e) {
+            abort(403, $e->getMessage());
         } catch (\Throwable $th) {
             throw ValidationException::withMessages([
                 "email" => "invalid credentials",
