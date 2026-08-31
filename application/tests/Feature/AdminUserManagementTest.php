@@ -149,6 +149,51 @@ class AdminUserManagementTest extends TestCase
             'id' => $user->id,
             'role' => UserRole::PARTICIPANT->value,
         ]);
+    }
+    public function testAdminCanViewUsersList(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::ADMIN,
+        ]);
+        User::factory()->count(3)->create();
 
+        $response = $this
+            ->actingAs($admin)
+            ->get("/api/admin/users");
+
+        $response->assertStatus(200);
+
+        $response->assertJsonCount(4, 'data');
+    }
+    public function testParticipantCannotViewUsersList(): void
+    {
+        $participant = User::factory()->create([
+            'role' => UserRole::PARTICIPANT,
+        ]);
+
+        $response = $this
+            ->actingAs($participant)
+            ->get('/api/admin/users');
+
+        $response->assertStatus(403);
+    }
+    public function testAdminUsersListIsPaginated(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::ADMIN,
+        ]);
+
+        User::factory()->count(20)->create();
+
+        $response = $this
+            ->actingAs($admin)
+            ->get('/api/admin/users');
+
+        $response->assertStatus(200);
+
+        $response->assertJsonCount(15, 'data');
+
+        $response->assertJsonPath('per_page', 15);
+        $response->assertJsonPath('total', 21);
     }
 }

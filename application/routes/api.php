@@ -15,6 +15,9 @@ Route::patch('/admin/users/{user}/unblock', [AdminUserController::class, 'unbloc
 Route::patch('/admin/users/{user}/role', [AdminUserController::class, 'changeRole'])
     ->middleware(['auth:sanctum', 'can:manage-users']);
 
+Route::get('/admin/users', [AdminUserController::class, 'index'])
+    ->middleware(['auth:sanctum', 'can:manage-users']);
+
 Route::get("/health", HealthController::class);
 
 Route::prefix("/auth")

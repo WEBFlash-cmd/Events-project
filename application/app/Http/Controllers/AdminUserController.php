@@ -6,6 +6,10 @@ use App\Models\User;
 
 class AdminUserController extends Controller
 {
+    public function index()
+    {
+        return User::paginate(15);
+    }
     public function block(User $user)
     {
         $user->is_blocked = true;
