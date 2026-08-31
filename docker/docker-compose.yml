@@ -1,4 +1,4 @@
-name: training-ps
+name: events-project
 services:
   nginx:
     image: nginx:1.27-alpine
@@ -10,7 +10,7 @@ services:
     depends_on:
       - php
     networks:
-      - training-ps
+      - events-project
 
   php:
     build:
@@ -29,7 +29,7 @@ services:
     environment:
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
-      PHP_IDE_CONFIG: "serverName=training-ps"
+      PHP_IDE_CONFIG: "serverName=events-project"
       HOME: /home/www-data
       COMPOSER_HOME: /home/www-data/.composer
       COMPOSER_CACHE_DIR: /home/www-data/.cache/composer
@@ -37,8 +37,8 @@ services:
       XDG_CACHE_HOME: /home/www-data/.cache
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB:-training-ps}
-      DB_USER: ${POSTGRES_USER:-training-ps}
+      DB_NAME: ${POSTGRES_DB:-events-project}
+      DB_USER: ${POSTGRES_USER:-events-project}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-secret}
       REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
@@ -46,26 +46,26 @@ services:
       db:
         condition: service_healthy
     networks:
-      - training-ps
+      - events-project
 
   db:
     image: postgres:17
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-training-ps}
-      POSTGRES_USER: ${POSTGRES_USER:-training-ps}
+      POSTGRES_DB: ${POSTGRES_DB:-events-project}
+      POSTGRES_USER: ${POSTGRES_USER:-events-project}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init-schema.sql:/docker-entrypoint-initdb.d/init-schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-training-ps} -d ${POSTGRES_DB:-training-ps}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-events-project} -d ${POSTGRES_DB:-events-project}"]
       interval: 5s
       timeout: 5s
       retries: 5
     networks:
-      - training-ps
+      - events-project
   redis:
     image: redis:8.8.1-alpine
     ports:
@@ -74,7 +74,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - training-ps
+      - events-project
   mailhog:
     image: mailhog/mailhog:latest
     ports:
@@ -82,12 +82,12 @@ services:
     logging:
       driver: 'none'
     networks:
-      - training-ps
+      - events-project
 volumes:
   postgres_data:
   composer_home:
   redis_data:
 
 networks:
-  training-ps:
+  events-project:
     driver: bridge
