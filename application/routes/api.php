@@ -4,6 +4,19 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HealthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminUserController;
+
+Route::patch('/admin/users/{user}/block', [AdminUserController::class, 'block'])
+    ->middleware(['auth:sanctum', 'can:manage-users']);
+
+Route::patch('/admin/users/{user}/unblock', [AdminUserController::class, 'unblock'])
+    ->middleware(['auth:sanctum', 'can:manage-users']);
+
+Route::patch('/admin/users/{user}/role', [AdminUserController::class, 'changeRole'])
+    ->middleware(['auth:sanctum', 'can:manage-users']);
+
+Route::get('/admin/users', [AdminUserController::class, 'index'])
+    ->middleware(['auth:sanctum', 'can:manage-users']);
 
 Route::get("/health", HealthController::class);
 
