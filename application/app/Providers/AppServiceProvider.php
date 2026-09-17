@@ -30,6 +30,10 @@ class AppServiceProvider extends ServiceProvider
             return $user->role === UserRole::ADMIN;
         });
 
+        Gate::define('manage-categories', function (User $user): bool {
+            return $user->role === UserRole::ADMIN;
+        });
+
         RateLimiter::for("reg", function (Request $request) {
             return Limit::perMinutes(30, 10)->by($request->ip());
         });
