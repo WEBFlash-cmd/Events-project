@@ -6,20 +6,24 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Models\Category;
+use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    public function __construct(
+        private CategoryService  $categoryService
+    ) {
+
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(): JsonResponse
     {
-        $categories = Category::all();
-
         return response()->json([
-            'data' => $categories,
+            'data' => $this->categoryService->getAllCategories(),
         ]);
     }
 
@@ -28,10 +32,8 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
-        $category = Category::create($request->validated());
-
         return response()->json([
-            'data' => $category,
+            'data' => $this->categoryService->createCategory($request->validated()),
         ], 201);
     }
 
@@ -41,7 +43,7 @@ class CategoryController extends Controller
     public function show(Category $category): JsonResponse
     {
         return response()->json([
-            'data' => $category,
+            'data' => $this->categoryService->showCategory($category),
         ]);
     }
 
@@ -50,10 +52,11 @@ class CategoryController extends Controller
      */
     public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
     {
-        $category->update($request->validated());
-
         return response()->json([
-            'data' => $category->refresh()
+            'data' => $this->categoryService->updateCategory(
+                $category,
+                $request->validated()
+            ),
         ]);
     }
 
@@ -62,7 +65,7 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): JsonResponse
     {
-        $category->delete();
+        $this->categoryService->deleteCategory($category);
 
         return response()->json(null, 204);
     }
