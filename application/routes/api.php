@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\VenueController;
 
 Route::patch('/admin/users/{user}/block', [AdminUserController::class, 'block'])
     ->middleware(['auth:sanctum', 'can:users.block']);
@@ -32,6 +33,12 @@ Route::get('/admin/categories', [CategoryController::class, 'index'])
 
 Route::get('/admin/categories/{category}', [CategoryController::class, 'show'])
     ->middleware(['auth:sanctum', 'can:categories.view']);
+
+Route::post('/admin/venues', [VenueController::class, 'store'])
+    ->middleware(['auth:sanctum', 'can:venues.create']);
+
+Route::get('/venues', [VenueController::class, 'index'])
+    ->middleware(['auth:sanctum', 'can:venues.view']);
 
 Route::prefix("/auth")
     ->as("auth.")

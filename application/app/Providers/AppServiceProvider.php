@@ -34,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
             'categories.create',
             'categories.update',
             'categories.delete',
+            'venues.create',
+            'venues.view',
         ];
 
         foreach ($permissions as $permissionName) {
