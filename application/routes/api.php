@@ -8,30 +8,30 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\Admin\CategoryController;
 
 Route::patch('/admin/users/{user}/block', [AdminUserController::class, 'block'])
-    ->middleware(['auth:sanctum', 'can:manage-users']);
+    ->middleware(['auth:sanctum', 'can:users.block']);
 
 Route::patch('/admin/users/{user}/unblock', [AdminUserController::class, 'unblock'])
-    ->middleware(['auth:sanctum', 'can:manage-users']);
+    ->middleware(['auth:sanctum', 'can:users.unblock']);
 
 Route::patch('/admin/users/{user}/role', [AdminUserController::class, 'changeRole'])
-    ->middleware(['auth:sanctum', 'can:manage-users']);
+    ->middleware(['auth:sanctum', 'can:users.update-role']);
 
 Route::patch('/admin/categories/{category}', [CategoryController::class, 'update'])
-    ->middleware(['auth:sanctum', 'can:manage-categories']);
+    ->middleware(['auth:sanctum', 'can:categories.update']);
 
 Route::get('/admin/users', [AdminUserController::class, 'index'])
-    ->middleware(['auth:sanctum', 'can:manage-users']);
+    ->middleware(['auth:sanctum', 'can:users.view']);
 
 Route::get("/health", HealthController::class);
 
 Route::post('/admin/categories', [CategoryController::class, 'store'])
-    ->middleware(['auth:sanctum', 'can:manage-categories']);
+    ->middleware(['auth:sanctum', 'can:categories.create']);
 
 Route::get('/admin/categories', [CategoryController::class, 'index'])
-    ->middleware(['auth:sanctum', 'can:manage-categories']);
+    ->middleware(['auth:sanctum', 'can:categories.view']);
 
 Route::get('/admin/categories/{category}', [CategoryController::class, 'show'])
-    ->middleware(['auth:sanctum', 'can:manage-categories']);
+    ->middleware(['auth:sanctum', 'can:categories.view']);
 
 Route::prefix("/auth")
     ->as("auth.")
@@ -51,4 +51,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::delete('/admin/categories/{category}', [CategoryController::class, 'destroy'])
-    ->middleware(['auth:sanctum', 'can:manage-categories']);
+    ->middleware(['auth:sanctum', 'can:categories.delete']);
