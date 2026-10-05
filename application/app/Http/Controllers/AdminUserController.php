@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Http\Requests\Admin\UpdateUserRoleRequest;
 use App\Models\User;
+use App\Models\Role;
 
 class AdminUserController extends Controller
 {
@@ -32,7 +33,9 @@ class AdminUserController extends Controller
 
     public function changeRole(UpdateUserRoleRequest $request ,User $user)
     {
+        $role = Role::where('name', $request->role)->firstOrFail();
         $user->role = $request->role;
+        $user->rbacRole()->associate($role);
         $user->save();
 
         return response()->json([

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Role;
 use App\Enums\UserRole;
 
 class AdminUserManagementTest extends TestCase
@@ -88,27 +89,6 @@ class AdminUserManagementTest extends TestCase
         ]);
     }
 
-    public function testAdminCanChangeUserRole(): void
-    {
-        $admin = User::factory()->create([
-            'role' => UserRole::ADMIN,
-        ]);
-        $user = User::factory()->create([
-            'role' => UserRole::PARTICIPANT,
-        ]);
-        $response = $this
-            ->actingAs($admin)
-            ->patch("/api/admin/users/{$user->id}/role", [
-                'role' => UserRole::ORGANIZER->value,
-            ]);
-        $response->assertStatus(200);
-
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'role' => UserRole::ORGANIZER->value,
-        ]);
-    }
-
     public function testAdminCannotSetInvalidUserRole(): void
     {
         $admin = User::factory()->create([
@@ -129,6 +109,7 @@ class AdminUserManagementTest extends TestCase
             'role' => UserRole::PARTICIPANT->value,
         ]);
     }
+
     public function testParticipantCannotChangeUserRole(): void
     {
         $participant = User::factory()->create([
@@ -148,6 +129,30 @@ class AdminUserManagementTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
             'role' => UserRole::PARTICIPANT->value,
+        ]);
+    }
+    public function testAdminCanChangeUserRole(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::ADMIN,
+        ]);
+        $user = User::factory()->create([
+            'role' => UserRole::PARTICIPANT,
+        ]);
+        $organizerRole = Role::where('name', UserRole::ORGANIZER->value)
+            ->firstOrFail();
+
+        $response = $this
+            ->actingAs($admin)
+            ->patch("/api/admin/users/{$user->id}/role", [
+                'role' => UserRole::ORGANIZER->value,
+            ]);
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'role' => UserRole::ORGANIZER->value,
+            'role_id' => $organizerRole->id
         ]);
     }
     public function testAdminCanViewUsersList(): void

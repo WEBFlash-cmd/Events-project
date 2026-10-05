@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Data\Auth\LoginData;
 use App\Data\Auth\RegistrationData;
+use App\Enums\UserRole;
 use App\Mail\EmailVerification;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Cache;
@@ -16,10 +18,14 @@ class AuthService
 {
     public function register(RegistrationData $data): User
     {
+        $role = Role::where('name', UserRole::PARTICIPANT->value)
+            ->firstOrFail();
         $user = User::create([
             'email' => $data->email,
             'password' => $data->password,
         ]);
+        $user->rbacRole()->associate($role);
+        $user->save();
         event(new Registered($user));
         return $user;
     }

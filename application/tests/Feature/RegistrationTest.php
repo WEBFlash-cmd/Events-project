@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 use App\Enums\UserRole;
+use App\Models\Role;
 
 class RegistrationTest extends TestCase
 {
@@ -30,6 +31,11 @@ class RegistrationTest extends TestCase
         $response->assertStatus(201);
         $this->assertDatabaseHas('users', ["email" => $email]);
         $user = User::where("email", $email)->first();
+        $participantRole = Role::where('name', UserRole::PARTICIPANT->value)
+            ->firstOrFail();
+
+        $this->assertEquals($participantRole->id, $user->role_id);
+        $this->assertEquals(UserRole::PARTICIPANT->value, $user->rbacRole->name);
         $this->assertEquals(UserRole::PARTICIPANT, $user->role);
         $this->assertFalse($user->is_blocked);
         $this->assertTrue(\Hash::check($password, $user->password));
@@ -87,4 +93,5 @@ class RegistrationTest extends TestCase
             $resp->assertStatus($i < 10 ? 201 : 429);
         }
     }
+
 }
