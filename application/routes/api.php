@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VenueController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\TicketTypeController;
 
 Route::patch('/admin/users/{user}/block', [AdminUserController::class, 'block'])
     ->middleware(['auth:sanctum', 'can:users.block']);
@@ -53,6 +54,15 @@ Route::post('/events/{event}/publish', [EventController::class, 'publish'])
 Route::get('/events', [EventController::class, 'index']);
 
 Route::get('/events/{event}', [EventController::class, 'show']);
+
+Route::get('/events/{event}/ticket-types', [TicketTypeController::class, 'index']);
+
+Route::post('/events/{event}/ticket-types', [TicketTypeController::class, 'store'])
+    ->middleware('auth:sanctum');
+
+Route::patch('/events/{event}/ticket-types/{ticketType}', [TicketTypeController::class, 'update'])
+    ->middleware('auth:sanctum')
+    ->scopeBindings();
 
 Route::prefix("/auth")
     ->as("auth.")

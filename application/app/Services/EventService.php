@@ -73,12 +73,19 @@ class EventService
             $query->whereDate('starts_at', '<=', $filters['date_to']);
         }
 
-        $direction = ($filters['sort'] ?? 'date_asc') === 'date_desc'
+        $sort = $filters['sort'] ?? 'date_asc';
+        $direction = in_array($sort, ['date_desc', 'price_desc'], true)
             ? 'desc'
             : 'asc';
 
+        if (in_array($sort, ['price_asc', 'price_desc'], true)) {
+            $query->withMin('ticketTypes as min_ticket_price', 'price')
+                ->orderByRaw("min_ticket_price {$direction} NULLS LAST");
+        } else {
+            $query->orderBy('starts_at', $direction);
+        }
+
         return $query
-            ->orderBy('starts_at', $direction)
             ->orderBy('id', $direction)
             ->paginate(15)
             ->withQueryString();
