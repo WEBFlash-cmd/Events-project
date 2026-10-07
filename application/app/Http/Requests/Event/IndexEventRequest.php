@@ -34,7 +34,7 @@ class IndexEventRequest extends FormRequest
             'venue_id' => ['sometimes', 'integer', 'exists:venues,id'],
             'date_from' => ['sometimes', 'date_format:Y-m-d'],
             'date_to' => $dateToRules,
-            'sort' => ['sometimes', 'in:date_asc,date_desc'],
+            'sort' => ['sometimes', 'in:date_asc,date_desc,price_asc,price_desc'],
             'page' => ['sometimes', 'integer', 'min:1'],
         ];
     }

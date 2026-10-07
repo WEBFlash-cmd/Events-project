@@ -68,6 +68,57 @@ class EventManagementTest extends TestCase
             ->assertJsonPath('data.0.id', $ids[16]);
     }
 
+    public static function priceSorts(): array
+    {
+        return ['ascending' => ['price_asc'], 'descending' => ['price_desc']];
+    }
+
+    #[DataProvider('priceSorts')]
+    public function testEventsAreSortedByMinimumTicketPrice(string $sort): void
+    {
+        $owner = User::factory()->create(['role' => UserRole::ORGANIZER]);
+        $withoutTickets = $this->createEventFor($owner);
+        $expensive = $this->createEventFor($owner);
+        $cheap = $this->createEventFor($owner);
+        $free = $this->createEventFor($owner);
+        $samePrice = $this->createEventFor($owner);
+
+        foreach ([$withoutTickets, $expensive, $cheap, $free, $samePrice] as $event) {
+            $event->update(['status' => EventStatus::PUBLISHED]);
+        }
+        $cheap->update(['title' => 'Unique price sorting conference']);
+
+        $addType = function (Event $event, string $name, string $price): void {
+            $event->ticketTypes()->create(['name' => $name, 'price' => $price, 'quantity' => 10]);
+        };
+        $addType($expensive, 'Standard', '200.00');
+        $addType($cheap, 'VIP', '500.00');
+        $addType($cheap, 'Standard', '100.00');
+        $addType($free, 'Free', '0.00');
+        $addType($samePrice, 'Standard', '100.00');
+        $draft = $this->createEventFor($owner);
+        $addType($draft, 'Draft', '1.00');
+
+        $expected = $sort === 'price_asc'
+            ? [$free->id, $cheap->id, $samePrice->id, $expensive->id, $withoutTickets->id]
+            : [$expensive->id, $samePrice->id, $cheap->id, $free->id, $withoutTickets->id];
+
+        $response = $this->getJson('/api/events?sort=' . $sort)
+            ->assertOk()->assertJsonPath('total', 5)
+            ->assertJsonPath('data.4.min_ticket_price', null);
+        $this->assertSame($expected, array_column($response->json('data'), 'id'));
+        $this->assertStringContainsString('sort=' . $sort, $response->json('first_page_url'));
+
+        $this->getJson('/api/events?sort=' . $sort . '&search=' . urlencode($cheap->title))
+            ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $cheap->id);
+    }
+
+    public function testUnknownSortIsRejected(): void
+    {
+        $this->getJson('/api/events?sort=unknown')
+            ->assertUnprocessable()->assertJsonValidationErrors('sort');
+    }
+
     public function testGuestCanViewPublishedEventWithRelations(): void
     {
         $event = $this->createEventFor(User::factory()->create(['role' => UserRole::ORGANIZER]));
