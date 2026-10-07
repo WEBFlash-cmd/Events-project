@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VenueController;
+use App\Http\Controllers\EventController;
 
 Route::patch('/admin/users/{user}/block', [AdminUserController::class, 'block'])
     ->middleware(['auth:sanctum', 'can:users.block']);
@@ -39,6 +40,19 @@ Route::post('/admin/venues', [VenueController::class, 'store'])
 
 Route::get('/venues', [VenueController::class, 'index'])
     ->middleware(['auth:sanctum', 'can:venues.view']);
+
+Route::post('/events', [EventController::class, 'store'])
+    ->middleware(['auth:sanctum', 'can:events.create']);
+
+Route::patch('/events/{event}', [EventController::class, 'update'])
+    ->middleware(['auth:sanctum', 'can:update,event']);
+
+Route::post('/events/{event}/publish', [EventController::class, 'publish'])
+    ->middleware(['auth:sanctum', 'can:publish,event']);
+
+Route::get('/events', [EventController::class, 'index']);
+
+Route::get('/events/{event}', [EventController::class, 'show']);
 
 Route::prefix("/auth")
     ->as("auth.")
