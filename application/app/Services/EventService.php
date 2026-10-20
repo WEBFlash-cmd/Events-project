@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Enums\EventStatus;
 use App\Events\EventPublished;
 use App\Models\Event;
+use App\Models\Order;
 use App\Models\User;
+use App\Models\Venue;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
@@ -22,9 +24,42 @@ class EventService
 
     public function updateEvent(Event $event, array $data): Event
     {
-        $event->update($data);
+        return DB::transaction(function () use ($event, $data) {
+            $event = Event::query()->lockForUpdate()->findOrFail($event->id);
+            $event->fill($data);
 
-        return $event;
+            $protectedChanges = array_filter(['starts_at', 'ends_at', 'venue_id'],
+                fn ($field) => $event->isDirty($field));
+            if ($protectedChanges !== [] && (Order::query()->where('event_id', $event->id)
+                ->where('status', 'paid')->exists() || $event->tickets()->exists())) {
+                throw ValidationException::withMessages(array_fill_keys($protectedChanges,
+                    'После продажи билетов нельзя изменять дату и место проведения.'));
+            }
+
+            // Partial updates must be checked against the current locked record.
+            if ($event->isDirty('starts_at') && $event->starts_at->lessThanOrEqualTo(now())) {
+                throw ValidationException::withMessages(['starts_at' => 'Дата начала должна быть в будущем.']);
+            }
+            if ($event->ends_at->lessThanOrEqualTo($event->starts_at)) {
+                throw ValidationException::withMessages(['ends_at' => 'Дата окончания должна быть позже даты начала.']);
+            }
+
+            if ($event->isDirty('venue_id')) {
+                $venue = Venue::query()->findOrFail($event->venue_id);
+                $held = DB::table('order_items')->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->where('orders.event_id', $event->id)->whereIn('orders.status', ['pending', 'paid'])
+                    ->sum('order_items.quantity');
+                if ($event->ticketTypes()->sum('quantity') + $held > $venue->capacity) {
+                    throw ValidationException::withMessages([
+                        'venue_id' => 'Вместимость места меньше общего количества доступных и зарезервированных билетов.',
+                    ]);
+                }
+            }
+
+            $event->save();
+
+            return $event;
+        }, 3);
     }
 
     public function publishEvent(Event $event): Event
