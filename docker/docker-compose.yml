@@ -48,6 +48,20 @@ services:
     networks:
       - events-project
 
+  scheduler:
+    extends:
+      service: php
+    image: events-project-php
+    command: ["php", "artisan", "schedule:work"]
+    restart: unless-stopped
+
+  queue:
+    extends:
+      service: php
+    image: events-project-php
+    command: ["php", "artisan", "queue:work", "database", "--queue=notifications,default", "--sleep=1", "--tries=3", "--timeout=60"]
+    restart: unless-stopped
+
   db:
     image: postgres:17
     ports:
