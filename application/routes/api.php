@@ -11,11 +11,20 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\TicketTypeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\TicketController;
 
 Route::post('/payments/webhook', PaymentWebhookController::class);
 
+Route::get('/orders', [OrderController::class, 'index'])->middleware('auth:sanctum');
+
 Route::get('/orders/{order}', [OrderController::class, 'show'])
     ->middleware(['auth:sanctum', 'can:view,order']);
+
+Route::get('/tickets', [TicketController::class, 'index'])->middleware('auth:sanctum');
+
+Route::get('/tickets/{ticket}', [TicketController::class, 'show'])
+    ->whereNumber('ticket')
+    ->middleware(['auth:sanctum', 'can:view,ticket']);
 
 Route::patch('/admin/users/{user}/block', [AdminUserController::class, 'block'])
     ->middleware(['auth:sanctum', 'can:users.block']);
