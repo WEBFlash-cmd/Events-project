@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class EventService
 {
@@ -27,6 +28,14 @@ class EventService
     }
 
     public function publishEvent(Event $event): Event
+    {
+        return DB::transaction(function () use ($event) {
+            $event = Event::query()->lockForUpdate()->findOrFail($event->id);
+            return $this->publishLockedEvent($event);
+        }, 3);
+    }
+
+    private function publishLockedEvent(Event $event): Event
     {
         if ($event->status !== EventStatus::DRAFT) {
             throw ValidationException::withMessages([

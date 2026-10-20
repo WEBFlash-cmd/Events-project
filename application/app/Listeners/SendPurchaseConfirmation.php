@@ -22,7 +22,8 @@ class SendPurchaseConfirmation implements ShouldQueueAfterCommit
         DB::transaction(function () use ($event) {
             $order = Order::query()->lockForUpdate()->findOrFail($event->order->id);
 
-            if ($order->status !== 'paid' || $order->purchase_confirmation_sent_at !== null) {
+            if ($order->status !== 'paid' || $order->purchase_confirmation_sent_at !== null
+                || $order->event->status === \App\Enums\EventStatus::CANCELLED) {
                 return;
             }
 

@@ -11,6 +11,11 @@ use App\Http\Requests\Event\IndexEventRequest;
 
 class EventController extends Controller
 {
+    public function cancel(\Illuminate\Http\Request $request, Event $event, \App\Services\EventCancellationService $service): JsonResponse
+    {
+        return response()->json(['data' => $service->cancel($event, $request->user())]);
+    }
+
     public function __construct(private EventService $eventService)
     {
     }

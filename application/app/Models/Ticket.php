@@ -11,7 +11,7 @@ class Ticket extends Model
 {
     protected function casts(): array
     {
-        return ['checked_in_at' => 'datetime', 'checked_in_by' => 'integer'];
+        return ['checked_in_at' => 'datetime', 'checked_in_by' => 'integer', 'refund_required' => 'boolean'];
     }
 
     public function ticketType(): BelongsTo

@@ -72,6 +72,10 @@ Route::patch('/events/{event}', [EventController::class, 'update'])
 Route::post('/events/{event}/publish', [EventController::class, 'publish'])
     ->middleware(['auth:sanctum', 'can:publish,event']);
 
+Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])
+    ->whereNumber('event')
+    ->middleware(['auth:sanctum', 'can:cancel,event']);
+
 Route::get('/events', [EventController::class, 'index']);
 
 Route::get('/events/{event}', [EventController::class, 'show']);

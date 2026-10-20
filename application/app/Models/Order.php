@@ -17,6 +17,7 @@ class Order extends Model
             'total_amount' => 'decimal:2',
             'expires_at' => 'datetime',
             'purchase_confirmation_sent_at' => 'datetime',
+            'event_cancellation_sent_at' => 'datetime',
         ];
     }
 
