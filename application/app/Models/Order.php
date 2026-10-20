@@ -18,6 +18,7 @@ class Order extends Model
             'expires_at' => 'datetime',
             'purchase_confirmation_sent_at' => 'datetime',
             'event_cancellation_sent_at' => 'datetime',
+            'event_reminder_sent_at' => 'datetime',
         ];
     }
 
