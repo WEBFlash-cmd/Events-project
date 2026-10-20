@@ -257,3 +257,8 @@ docker exec events-project-php-1 php artisan queue:failed
 
 API отмены, флаги возврата, письма и ручная проверка описаны в
 [EVENT_CANCELLATION.md](EVENT_CANCELLATION.md).
+
+## Напоминания
+
+Напоминания за 24 часа через Scheduler и очередь описаны в
+[EVENT_REMINDERS.md](EVENT_REMINDERS.md).
