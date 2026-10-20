@@ -9,6 +9,13 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VenueController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\TicketTypeController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentWebhookController;
+
+Route::post('/payments/webhook', PaymentWebhookController::class);
+
+Route::get('/orders/{order}', [OrderController::class, 'show'])
+    ->middleware(['auth:sanctum', 'can:view,order']);
 
 Route::patch('/admin/users/{user}/block', [AdminUserController::class, 'block'])
     ->middleware(['auth:sanctum', 'can:users.block']);
@@ -54,6 +61,12 @@ Route::post('/events/{event}/publish', [EventController::class, 'publish'])
 Route::get('/events', [EventController::class, 'index']);
 
 Route::get('/events/{event}', [EventController::class, 'show']);
+
+Route::post('/events/{event}/orders', [OrderController::class, 'store'])
+    ->middleware('auth:sanctum');
+
+Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])
+    ->middleware(['auth:sanctum', 'can:cancel,order']);
 
 Route::get('/events/{event}/ticket-types', [TicketTypeController::class, 'index']);
 

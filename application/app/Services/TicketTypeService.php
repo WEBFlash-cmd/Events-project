@@ -55,7 +55,13 @@ class TicketTypeService
             $query->where('id', '!=', $exceptId);
         }
 
-        if ($quantity < 0 || $query->sum('quantity') + $quantity > $event->venue->capacity) {
+        $heldQuantity = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.event_id', $event->id)
+            ->whereIn('orders.status', ['pending', 'paid'])
+            ->sum('order_items.quantity');
+
+        if ($quantity < 0 || $query->sum('quantity') + $quantity + $heldQuantity > $event->venue->capacity) {
             throw ValidationException::withMessages([
                 'quantity' => 'Количество билетов должно быть неотрицательным, а общее количество не должно превышать вместимость места проведения.',
             ]);
