@@ -9,6 +9,27 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\VenueController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\TicketTypeController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\TicketController;
+
+Route::post('/payments/webhook', PaymentWebhookController::class);
+
+Route::get('/orders', [OrderController::class, 'index'])->middleware('auth:sanctum');
+
+Route::get('/orders/{order}', [OrderController::class, 'show'])
+    ->middleware(['auth:sanctum', 'can:view,order']);
+
+Route::get('/tickets', [TicketController::class, 'index'])->middleware('auth:sanctum');
+
+Route::get('/tickets/{ticket}', [TicketController::class, 'show'])
+    ->whereNumber('ticket')
+    ->middleware(['auth:sanctum', 'can:view,ticket']);
+
+Route::post('/events/{event}/tickets/{ticket}/check-in', [TicketController::class, 'checkIn'])
+    ->whereNumber(['event', 'ticket'])
+    ->scopeBindings()
+    ->middleware(['auth:sanctum', 'can:checkIn,ticket,event']);
 
 Route::patch('/admin/users/{user}/block', [AdminUserController::class, 'block'])
     ->middleware(['auth:sanctum', 'can:users.block']);
@@ -51,9 +72,19 @@ Route::patch('/events/{event}', [EventController::class, 'update'])
 Route::post('/events/{event}/publish', [EventController::class, 'publish'])
     ->middleware(['auth:sanctum', 'can:publish,event']);
 
+Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])
+    ->whereNumber('event')
+    ->middleware(['auth:sanctum', 'can:cancel,event']);
+
 Route::get('/events', [EventController::class, 'index']);
 
 Route::get('/events/{event}', [EventController::class, 'show']);
+
+Route::post('/events/{event}/orders', [OrderController::class, 'store'])
+    ->middleware('auth:sanctum');
+
+Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])
+    ->middleware(['auth:sanctum', 'can:cancel,order']);
 
 Route::get('/events/{event}/ticket-types', [TicketTypeController::class, 'index']);
 

@@ -7,6 +7,12 @@ use App\Models\User;
 
 class EventPolicy
 {
+    public function cancel(User $user, Event $event): bool
+    {
+        return $user->hasPermission('events.cancel-any')
+            || ($user->hasPermission('events.cancel') && $event->organizer_id === $user->id);
+    }
+
     /**
      * Determine whether the user can view any models.
      */
