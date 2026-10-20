@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\EventStatus;
 use App\Http\Requests\Order\StoreOrderRequest;
+use App\Http\Requests\Purchase\IndexOwnPurchasesRequest;
 use App\Models\Event;
 use App\Models\Order;
 use App\Services\OrderReservationService;
@@ -14,6 +15,17 @@ use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
+    public function index(IndexOwnPurchasesRequest $request): JsonResponse
+    {
+        $orders = $request->user()->orders()
+            ->with(['event.venue', 'items', 'payment'])
+            ->orderByDesc('created_at')->orderByDesc('id')
+            ->paginate($request->integer('per_page', 15))
+            ->withQueryString();
+
+        return response()->json($orders);
+    }
+
     public function show(Order $order): JsonResponse
     {
         return response()->json(['data' => $order->load(['items', 'payment', 'tickets'])]);
