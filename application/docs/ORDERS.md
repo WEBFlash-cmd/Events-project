@@ -252,3 +252,8 @@ docker exec events-project-php-1 php artisan queue:failed
 
 После устранения причины можно повторить конкретную задачу командой
 `php artisan queue:retry <uuid>` внутри PHP-контейнера.
+
+## Отмена мероприятия
+
+API отмены, флаги возврата, письма и ручная проверка описаны в
+[EVENT_CANCELLATION.md](EVENT_CANCELLATION.md).
