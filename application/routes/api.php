@@ -26,6 +26,11 @@ Route::get('/tickets/{ticket}', [TicketController::class, 'show'])
     ->whereNumber('ticket')
     ->middleware(['auth:sanctum', 'can:view,ticket']);
 
+Route::post('/events/{event}/tickets/{ticket}/check-in', [TicketController::class, 'checkIn'])
+    ->whereNumber(['event', 'ticket'])
+    ->scopeBindings()
+    ->middleware(['auth:sanctum', 'can:checkIn,ticket,event']);
+
 Route::patch('/admin/users/{user}/block', [AdminUserController::class, 'block'])
     ->middleware(['auth:sanctum', 'can:users.block']);
 

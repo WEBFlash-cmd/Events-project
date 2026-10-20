@@ -3,11 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Purchase\IndexOwnPurchasesRequest;
+use App\Http\Requests\Ticket\CheckInTicketRequest;
+use App\Models\Event;
 use App\Models\Ticket;
+use App\Services\TicketCheckInService;
 use Illuminate\Http\JsonResponse;
 
 class TicketController extends Controller
 {
+    public function checkIn(CheckInTicketRequest $request, Event $event, Ticket $ticket, TicketCheckInService $service): JsonResponse
+    {
+        return response()->json(['data' => $service->checkIn($event, $ticket, $request->user())]);
+    }
+
     public function index(IndexOwnPurchasesRequest $request): JsonResponse
     {
         $tickets = $request->user()->tickets()
