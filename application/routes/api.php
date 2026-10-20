@@ -12,6 +12,15 @@ use App\Http\Controllers\TicketTypeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\EventReportController;
+
+Route::get('/events/{event}/participants', [EventReportController::class, 'participants'])
+    ->whereNumber('event')
+    ->middleware(['auth:sanctum', 'can:viewReports,event']);
+
+Route::get('/events/{event}/sales', [EventReportController::class, 'sales'])
+    ->whereNumber('event')
+    ->middleware(['auth:sanctum', 'can:viewReports,event']);
 
 Route::post('/payments/webhook', PaymentWebhookController::class);
 

@@ -7,6 +7,12 @@ use App\Models\User;
 
 class EventPolicy
 {
+    public function viewReports(User $user, Event $event): bool
+    {
+        return $user->hasPermission('events.reports-any')
+            || ($user->hasPermission('events.reports') && $event->organizer_id === $user->id);
+    }
+
     public function cancel(User $user, Event $event): bool
     {
         return $user->hasPermission('events.cancel-any')
