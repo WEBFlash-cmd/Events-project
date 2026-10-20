@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['number', 'user_id', 'event_id', 'ticket_type_id', 'order_id', 'order_item_id', 'sequence', 'status'])]
 class Ticket extends Model
 {
+    protected function casts(): array
+    {
+        return ['checked_in_at' => 'datetime', 'checked_in_by' => 'integer'];
+    }
+
     public function ticketType(): BelongsTo
     {
         return $this->belongsTo(TicketType::class);
