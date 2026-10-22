@@ -13,6 +13,14 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\EventReportController;
+use App\Http\Controllers\AccountController;
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AccountController::class, 'show']);
+    Route::patch('/me', [AccountController::class, 'update'])->middleware('throttle:10,1');
+    Route::patch('/me/password', [AccountController::class, 'password'])->middleware('throttle:10,1');
+    Route::post('/auth/logout', [AccountController::class, 'logout']);
+});
 
 Route::get('/events/{event}/participants', [EventReportController::class, 'participants'])
     ->whereNumber('event')

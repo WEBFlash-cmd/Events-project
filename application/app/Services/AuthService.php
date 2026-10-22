@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use App\Exceptions\BlockedUserException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class AuthService
 {
@@ -32,29 +34,40 @@ class AuthService
 
     public function login(LoginData $data): array
     {
-        $user = User::where('email', $data->email)->firstOrFail();
-        if ($user->is_blocked === true) {
-            throw new BlockedUserException('Your account is blocked');
-        }
-        $user->checkPassword($data->password);
-        $token = $user->createToken("login-token");
-        return [
-            "token" => $token->plainTextToken,
-        ];
+        return DB::transaction(function () use ($data) {
+            $user = User::query()->where('email', $data->email)->lockForUpdate()->firstOrFail();
+            if ($user->is_blocked === true) {
+                throw new BlockedUserException('Your account is blocked');
+            }
+            $user->checkPassword($data->password);
+            $token = $user->createToken("login-token");
+            return ["token" => $token->plainTextToken];
+        });
     }
 
     public function sendVerificationEmail(User $user): void
     {
         $code = Str::random(6);
-        Cache::put("mail-$code", $user->email, now()->addHour());
+        Cache::put("mail-$code", ['user_id' => $user->id, 'email' => $user->email], now()->addHour());
         Mail::to($user)->send(new EmailVerification($code));
     }
 
     public function verifyEmail(string $code): void
     {
-        $email = Cache::get("mail-$code");
-        $user = User::where('email', $email)->firstOrFail();
-        $user->email_verified_at = now();
-        $user->save();
+        $verification = Cache::get("mail-$code");
+        if (!is_array($verification) || !isset($verification['user_id'], $verification['email'])) {
+            throw ValidationException::withMessages(['code' => 'Invalid verification code']);
+        }
+        DB::transaction(function () use ($verification) {
+            $user = User::query()->lockForUpdate()->find($verification['user_id']);
+            if ($user === null || $user->email !== $verification['email']) {
+                throw ValidationException::withMessages(['code' => 'Invalid verification code']);
+            }
+            if ($user->email_verified_at === null) {
+                $user->email_verified_at = now();
+                $user->save();
+            }
+        });
+        Cache::forget("mail-$code");
     }
 }
