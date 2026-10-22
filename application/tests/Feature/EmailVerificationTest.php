@@ -35,7 +35,7 @@ class EmailVerificationTest extends TestCase
         Mail::fake();
         $listener->handle(new Registered($user));
         $emailFromCache = Cache::get("mail-" . self::FAKE_RANDOM_STRING);
-        $this->assertEquals($emailFromCache, $user->email);
+        $this->assertSame(['user_id' => $user->id, 'email' => $user->email], $emailFromCache);
         Mail::assertSent(EmailVerification::class, function (EmailVerification $mail) use ($user) {
             $mail->assertTo($user->email);
             $mail->assertSeeInHtml(self::FAKE_RANDOM_STRING);
@@ -46,7 +46,7 @@ class EmailVerificationTest extends TestCase
     public function testSuccessVerification()
     {
         $user = User::factory()->unverified()->create();
-        Cache::put("mail-" . self::FAKE_RANDOM_STRING, $user->email);
+        Cache::put("mail-" . self::FAKE_RANDOM_STRING, ['user_id' => $user->id, 'email' => $user->email]);
 
         $resp = $this->post("/api/auth/verify", [
             "code" => self::FAKE_RANDOM_STRING,
