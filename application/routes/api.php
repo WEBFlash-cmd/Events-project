@@ -14,6 +14,15 @@ use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Admin\PurchaseController as AdminPurchaseController;
+
+Route::get('/admin/orders', [AdminPurchaseController::class, 'orders'])
+    ->name('admin.orders.index')
+    ->middleware(['auth:sanctum', 'can:viewAny,App\Models\Order']);
+
+Route::get('/admin/tickets', [AdminPurchaseController::class, 'tickets'])
+    ->name('admin.tickets.index')
+    ->middleware(['auth:sanctum', 'can:viewAny,App\Models\Ticket']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AccountController::class, 'show']);
