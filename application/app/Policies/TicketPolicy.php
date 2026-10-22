@@ -8,6 +8,11 @@ use App\Models\User;
 
 class TicketPolicy
 {
+    public function viewAny(User $user): bool
+    {
+        return $user->hasPermission('tickets.view-any');
+    }
+
     public function checkIn(User $user, Ticket $ticket, Event $event): bool
     {
         return $ticket->event_id === $event->id
