@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Admin\UpdateUserRoleRequest;
 use App\Models\User;
 use App\Models\Role;
+use App\Services\UserAccessService;
 
 class AdminUserController extends Controller
 {
@@ -11,20 +12,18 @@ class AdminUserController extends Controller
     {
         return User::paginate(15);
     }
-    public function block(User $user)
+    public function block(User $user, UserAccessService $access)
     {
-        $user->is_blocked = true;
-        $user->save();
+        $access->block($user);
 
         return response()->json([
             'message' => 'User blocked',
         ]);
     }
 
-    public function unblock(User $user)
+    public function unblock(User $user, UserAccessService $access)
     {
-        $user->is_blocked = false;
-        $user->save();
+        $access->unblock($user);
 
         return response()->json([
             'message' => 'User unblocked',
