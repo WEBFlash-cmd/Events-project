@@ -12,7 +12,7 @@ class AdminPurchaseService
     public function orders(array $filters): LengthAwarePaginator
     {
         $query = Order::query()->with(['user:id,name,email', 'event.venue', 'items',
-            'payment:id,order_id,status,amount,refund_required,paid_at']);
+            'payment:id,order_id,status,amount,refund_required,refund_amount,paid_at']);
         $this->filter($query, $filters);
 
         if (array_key_exists('refund_required', $filters)) {

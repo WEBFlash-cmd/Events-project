@@ -43,8 +43,9 @@ class EventCancellationService
                         if ($order->status === 'pending') {
                             $this->reservations->cancel($order);
                         } else {
-                            $order->payment()->where('status', 'paid')->update([
+                            $order->payment()->whereIn('status', ['paid', 'refund_required'])->update([
                                 'status' => 'refund_required', 'refund_required' => true,
+                                'refund_amount' => DB::raw('amount'),
                             ]);
                             $order->tickets()->update(['refund_required' => true]);
                             $order->tickets()->where('status', 'active')->update(['status' => 'cancelled']);

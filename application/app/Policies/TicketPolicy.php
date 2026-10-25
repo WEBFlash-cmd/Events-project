@@ -8,6 +8,11 @@ use App\Models\User;
 
 class TicketPolicy
 {
+    public function cancel(User $user, Ticket $ticket): bool
+    {
+        return $ticket->user_id === $user->id;
+    }
+
     public function viewAny(User $user): bool
     {
         return $user->hasPermission('tickets.view-any');

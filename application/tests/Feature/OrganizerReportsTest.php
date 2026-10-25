@@ -30,7 +30,8 @@ class OrganizerReportsTest extends TestCase
             'unit_price' => $format($unitMinor)]);
         $order->payment()->create(['reference' => (string) Str::uuid(), 'cashbox_id' => 1,
             'amount' => $minor, 'status' => $refund ? 'refund_required' : ($status === 'paid' ? 'paid' : 'pending'),
-            'refund_required' => $refund, 'payment_url' => 'http://payments.test/private-url']);
+            'refund_required' => $refund, 'refund_amount' => $refund ? $minor : 0,
+            'payment_url' => 'http://payments.test/private-url']);
         if ($status === 'paid') {
             for ($sequence = 1; $sequence <= $quantity; $sequence++) {
                 $ticket = $order->tickets()->create(['number' => (string) Str::uuid(),

@@ -60,6 +60,8 @@ class TicketTypeService
             ->where('orders.event_id', $event->id)
             ->whereIn('orders.status', ['pending', 'paid'])
             ->sum('order_items.quantity');
+        $heldQuantity -= $event->tickets()->whereNotNull('cancelled_at')
+            ->whereHas('order', fn ($query) => $query->where('status', 'paid'))->count();
 
         if ($quantity < 0 || $query->sum('quantity') + $quantity + $heldQuantity > $event->venue->capacity) {
             throw ValidationException::withMessages([
