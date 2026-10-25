@@ -31,6 +31,38 @@ class LoginTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function testLoginIgnoresUnexpectedFields(): void
+    {
+        $user = User::factory()->create();
+
+        $this->postJson('/api/auth/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            'device' => 'phone',
+            'role' => 'admin',
+        ])->assertOk()->assertJsonStructure(['token']);
+
+        $this->assertEquals(1, $user->tokens()->count());
+        $this->assertEquals('participant', $user->fresh()->rbacRole->name);
+    }
+
+    public function testLoginRejectsNonStringCredentials(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (['email', 'password'] as $field) {
+            foreach ([['invalid'], 123456, true] as $value) {
+                $this->postJson('/api/auth/login', [
+                    'email' => $user->email,
+                    'password' => 'password',
+                    $field => $value,
+                ])->assertUnprocessable()->assertJsonValidationErrors([$field]);
+            }
+        }
+
+        $this->assertEquals(0, $user->tokens()->count());
+    }
+
     public function testInvalidPassword()
     {
         $user = User::factory()->create();

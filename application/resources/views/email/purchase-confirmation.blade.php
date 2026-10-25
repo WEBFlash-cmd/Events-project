@@ -14,9 +14,11 @@
     <h2>Ваши билеты</h2>
     <ul>
         @foreach ($order->tickets as $ticket)
-            <li>{{ $ticket->ticketType->name }} — {{ $ticket->number }}</li>
+            <li>{{ $ticket->ticketType->name }} — {{ $ticket->number }} — {{ match ($ticket->status) {
+                'active' => 'действует', 'used' => 'использован', default => 'отменён',
+            } }}</li>
         @endforeach
     </ul>
-    <p>Сохраните номера билетов для посещения мероприятия.</p>
+    <p>Для входа используйте только действующие билеты. Отменённые билеты недействительны.</p>
 </body>
 </html>

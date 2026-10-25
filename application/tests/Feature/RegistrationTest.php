@@ -65,6 +65,40 @@ class RegistrationTest extends TestCase
         $resp->assertJsonValidationErrors(["email"]);
     }
 
+    public function testRegistrationIgnoresUnexpectedFields(): void
+    {
+        \Event::fake();
+
+        $this->postJson('/api/auth/register', [
+            'email' => 'NewUser@example.test',
+            'password' => 'password',
+            'name' => 'Extra field',
+            'role' => 'admin',
+            'is_blocked' => true,
+        ])->assertCreated();
+
+        $user = User::where('email', 'newuser@example.test')->firstOrFail();
+        $this->assertEquals(UserRole::PARTICIPANT, $user->role);
+        $this->assertEquals('participant', $user->rbacRole->name);
+        $this->assertFalse($user->is_blocked);
+        $this->assertNull($user->name);
+    }
+
+    public function testRegistrationRejectsNonStringCredentials(): void
+    {
+        foreach (['email', 'password'] as $field) {
+            foreach ([['invalid'], 123456, true] as $value) {
+                $this->postJson('/api/auth/register', [
+                    'email' => 'newuser@example.test',
+                    'password' => 'password',
+                    $field => $value,
+                ])->assertUnprocessable()->assertJsonValidationErrors([$field]);
+            }
+        }
+
+        $this->assertDatabaseCount('users', 0);
+    }
+
     public function testDuplicateRegistrationData(): void
     {
         $user = User::factory()->create();

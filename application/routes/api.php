@@ -17,6 +17,8 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\PurchaseController as AdminPurchaseController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 
+Route::patterns(array_fill_keys(['event', 'order', 'ticket', 'ticketType', 'user', 'category'], '[0-9]+'));
+
 Route::get('/admin/events', [AdminEventController::class, 'index'])
     ->middleware(['auth:sanctum', 'can:viewAny,App\Models\Event']);
 

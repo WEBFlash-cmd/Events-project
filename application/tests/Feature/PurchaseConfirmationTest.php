@@ -105,6 +105,23 @@ class PurchaseConfirmationTest extends TestCase
         $this->assertDatabaseCount('tickets', 0);
     }
 
+    public function testDelayedConfirmationMarksCancelledTicketsAsInvalid(): void
+    {
+        $order = $this->checkout();
+        $this->webhook($order)->assertOk();
+        $order->event->update(['allows_ticket_cancellation' => true]);
+        $ticket = $order->tickets()->firstOrFail();
+        app(\App\Services\TicketCancellationService::class)->cancel($ticket, $order->user);
+
+        app(SendPurchaseConfirmation::class)->handle(new OrderPaid($order));
+
+        Mail::assertSent(PurchaseConfirmation::class, function ($mail) use ($ticket) {
+            $mail->assertSeeInHtml($ticket->number.' — отменён');
+            $mail->assertSeeInHtml('Отменённые билеты недействительны.');
+            return true;
+        });
+    }
+
     public function testFailedAndLatePaymentsDoNotQueuePurchaseConfirmation(): void
     {
         $failed = $this->checkout();
