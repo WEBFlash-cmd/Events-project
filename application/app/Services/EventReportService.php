@@ -60,7 +60,7 @@ class EventReportService
             $money = Payment::query()->whereIn('order_id', (clone $orders)->select('id'))
                 ->whereIn('status', ['paid', 'refund_required'])
                 ->selectRaw('COALESCE(SUM(amount), 0) AS gross,
-                    COALESCE(SUM(CASE WHEN refund_required THEN amount ELSE 0 END), 0) AS refunds')->first();
+                    COALESCE(SUM(refund_amount), 0) AS refunds')->first();
             $gross = (int) $money->gross;
             $refunds = (int) $money->refunds;
 

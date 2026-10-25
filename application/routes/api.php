@@ -64,6 +64,10 @@ Route::get('/tickets/{ticket}', [TicketController::class, 'show'])
     ->whereNumber('ticket')
     ->middleware(['auth:sanctum', 'can:view,ticket']);
 
+Route::post('/tickets/{ticket}/cancel', [TicketController::class, 'cancel'])
+    ->whereNumber('ticket')
+    ->middleware(['auth:sanctum', 'can:cancel,ticket']);
+
 Route::post('/events/{event}/tickets/{ticket}/check-in', [TicketController::class, 'checkIn'])
     ->whereNumber(['event', 'ticket'])
     ->scopeBindings()

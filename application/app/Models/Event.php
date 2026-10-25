@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'title', 'description', 'starts_at', 'ends_at',
     'venue_id', 'organizer_id', 'category_id', 'status',
+    'allows_ticket_cancellation',
 ])]
 class Event extends Model
 {
@@ -20,6 +21,7 @@ class Event extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'status' => EventStatus::class,
+            'allows_ticket_cancellation' => 'boolean',
         ];
     }
     public function venue(): BelongsTo

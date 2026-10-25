@@ -151,6 +151,7 @@ class PaymentService
             if ($order->status !== 'pending') {
                 $payment->update([
                     'status' => 'refund_required', 'refund_required' => true,
+                    'refund_amount' => $payment->amount,
                     'paid_at' => now(), 'error_code' => null,
                 ]);
 

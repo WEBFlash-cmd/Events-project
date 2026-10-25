@@ -28,12 +28,12 @@ class EventService
             $event = Event::query()->lockForUpdate()->findOrFail($event->id);
             $event->fill($data);
 
-            $protectedChanges = array_filter(['starts_at', 'ends_at', 'venue_id'],
+            $protectedChanges = array_filter(['starts_at', 'ends_at', 'venue_id', 'allows_ticket_cancellation'],
                 fn ($field) => $event->isDirty($field));
             if ($protectedChanges !== [] && (Order::query()->where('event_id', $event->id)
                 ->where('status', 'paid')->exists() || $event->tickets()->exists())) {
                 throw ValidationException::withMessages(array_fill_keys($protectedChanges,
-                    'После продажи билетов нельзя изменять дату и место проведения.'));
+                    'После продажи билетов нельзя изменять дату, место и условия отмены.'));
             }
 
             // Partial updates must be checked against the current locked record.
@@ -49,6 +49,8 @@ class EventService
                 $held = DB::table('order_items')->join('orders', 'orders.id', '=', 'order_items.order_id')
                     ->where('orders.event_id', $event->id)->whereIn('orders.status', ['pending', 'paid'])
                     ->sum('order_items.quantity');
+                $held -= $event->tickets()->whereNotNull('cancelled_at')
+                    ->whereHas('order', fn ($query) => $query->where('status', 'paid'))->count();
                 if ($event->ticketTypes()->sum('quantity') + $held > $venue->capacity) {
                     throw ValidationException::withMessages([
                         'venue_id' => 'Вместимость места меньше общего количества доступных и зарезервированных билетов.',

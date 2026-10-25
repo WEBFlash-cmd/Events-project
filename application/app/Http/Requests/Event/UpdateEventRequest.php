@@ -33,6 +33,7 @@ class UpdateEventRequest extends FormRequest
             'category_id' => ['sometimes', 'required', 'integer', 'exists:categories,id'],
             'organizer_id' => ['prohibited'],
             'status' => ['prohibited'],
+            'allows_ticket_cancellation' => ['sometimes', 'required', 'boolean'],
         ];
     }
     public function after(): array

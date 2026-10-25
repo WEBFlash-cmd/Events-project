@@ -31,6 +31,7 @@ class StoreEventRequest extends FormRequest
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'organizer_id' => ['prohibited'],
             'status' => ['prohibited'],
+            'allows_ticket_cancellation' => ['sometimes', 'required', 'boolean'],
         ];
     }
 }

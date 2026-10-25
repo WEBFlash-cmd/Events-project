@@ -4,13 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Purchase\IndexOwnPurchasesRequest;
 use App\Http\Requests\Ticket\CheckInTicketRequest;
+use App\Http\Requests\Ticket\CancelTicketRequest;
 use App\Models\Event;
 use App\Models\Ticket;
 use App\Services\TicketCheckInService;
+use App\Services\TicketCancellationService;
 use Illuminate\Http\JsonResponse;
 
 class TicketController extends Controller
 {
+    public function cancel(CancelTicketRequest $request, Ticket $ticket, TicketCancellationService $service): JsonResponse
+    {
+        return response()->json(['data' => $service->cancel($ticket, $request->user())]);
+    }
+
     public function checkIn(CheckInTicketRequest $request, Event $event, Ticket $ticket, TicketCheckInService $service): JsonResponse
     {
         return response()->json(['data' => $service->checkIn($event, $ticket, $request->user())]);
