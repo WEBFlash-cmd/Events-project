@@ -15,6 +15,18 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\PurchaseController as AdminPurchaseController;
+use App\Http\Controllers\Admin\EventController as AdminEventController;
+
+Route::get('/admin/events', [AdminEventController::class, 'index'])
+    ->middleware(['auth:sanctum', 'can:viewAny,App\Models\Event']);
+
+Route::get('/admin/events/{event}', [AdminEventController::class, 'show'])
+    ->whereNumber('event')
+    ->middleware(['auth:sanctum', 'can:view,event']);
+
+Route::delete('/admin/events/{event}', [AdminEventController::class, 'destroy'])
+    ->whereNumber('event')
+    ->middleware(['auth:sanctum', 'can:delete,event']);
 
 Route::get('/admin/orders', [AdminPurchaseController::class, 'orders'])
     ->name('admin.orders.index')
