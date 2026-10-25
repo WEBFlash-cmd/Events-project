@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EventStatus;
 use App\Events\OrderEventCancelled;
+use App\Events\EventCancelled;
 use App\Models\Event;
 use App\Models\Order;
 use App\Models\User;
@@ -53,6 +54,8 @@ class EventCancellationService
                         OrderEventCancelled::dispatch($order);
                     }
                 });
+
+            EventCancelled::dispatch($event);
 
             return $event;
         }, 3);

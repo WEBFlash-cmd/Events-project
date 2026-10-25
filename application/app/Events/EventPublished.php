@@ -5,8 +5,9 @@ namespace App\Events;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Event;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
-class EventPublished
+class EventPublished implements ShouldDispatchAfterCommit
 {
     use Dispatchable, SerializesModels;
 
