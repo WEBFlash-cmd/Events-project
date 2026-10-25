@@ -5,6 +5,7 @@ namespace App\Http\Requests\Auth;
 use App\Data\Auth\LoginData;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 
 class LoginRequest extends FormRequest
 {
@@ -16,6 +17,13 @@ class LoginRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('email'))) {
+            $this->merge(['email' => Str::lower($this->input('email'))]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,13 +32,13 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "email" => "required|email",
-            "password" => "required",
+            "email" => "bail|required|string|email",
+            "password" => "required|string",
         ];
     }
 
     public function toDTO(): LoginData
     {
-        return new LoginData(...$this->all());
+        return new LoginData(...$this->validated());
     }
 }

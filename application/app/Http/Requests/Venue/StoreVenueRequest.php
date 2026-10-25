@@ -26,7 +26,7 @@ class StoreVenueRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'capacity' => ['required', 'integer', 'min:1'],
+            'capacity' => ['required', 'integer', 'min:1', 'max:2147483647'],
         ];
     }
 }

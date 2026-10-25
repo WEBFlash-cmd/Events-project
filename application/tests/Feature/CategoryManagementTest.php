@@ -8,10 +8,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 use App\Models\Category;
+use Tests\Concerns\CreatesOrderContext;
 
 class CategoryManagementTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, CreatesOrderContext;
     /**
      * A basic feature test example.
      */
@@ -172,6 +173,21 @@ class CategoryManagementTest extends TestCase
         $this->assertDatabaseHas('categories', [
             'id' => $category->id,
         ]);
+    }
+
+    public function testAdminCannotDeleteCategoryUsedByEvent(): void
+    {
+        $admin = User::factory()->create(['role' => UserRole::ADMIN]);
+        Sanctum::actingAs($admin);
+        [, $event] = $this->createOrderContext();
+        $category = $event->category;
+
+        $this->deleteJson("/api/admin/categories/{$category->id}")
+            ->assertStatus(409)
+            ->assertJsonPath('message', 'Cannot delete a category that is used by events.');
+
+        $this->assertDatabaseHas('categories', ['id' => $category->id]);
+        $this->assertDatabaseHas('events', ['id' => $event->id, 'category_id' => $category->id]);
     }
 
     public function testParticipantCannotUpdateCategory(): void

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -50,8 +51,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
+            $email = $request->input('email');
+
             return Limit::perMinutes(30, 3)
-                ->by($request->email ?: $request->ip())
+                ->by(is_string($email) && $email !== '' ? Str::lower(trim($email)) : $request->ip())
                 ->after(function (Response $response) {
                     return $response->status() === 422;
                 });

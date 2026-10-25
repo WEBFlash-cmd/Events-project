@@ -19,9 +19,11 @@ class AuthRegistration extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'email' => Str::lower($this->email),
-        ]);
+        if (is_string($this->input('email'))) {
+            $this->merge([
+                'email' => Str::lower($this->input('email')),
+            ]);
+        }
     }
 
     /**
@@ -32,13 +34,18 @@ class AuthRegistration extends FormRequest
     public function rules(): array
     {
         return [
-            "email" => "required|email|unique:users,email",
-            "password" => "required",
+            "email" => "bail|required|string|email|max:255|unique:users,email",
+            "password" => ['bail', 'required', 'string', 'max:72',
+                function (string $attribute, string $value, \Closure $fail) {
+                    if (strlen($value) > 72 || str_contains($value, "\0")) {
+                        $fail('Пароль должен содержать не более 72 байт и не содержать нулевых символов.');
+                    }
+                }],
         ];
     }
 
     public function toDTO(): RegistrationData
     {
-        return new RegistrationData(...$this->all());
+        return new RegistrationData(...$this->validated());
     }
 }
