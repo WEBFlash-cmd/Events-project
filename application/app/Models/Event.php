@@ -22,6 +22,7 @@ class Event extends Model
             'ends_at' => 'datetime',
             'status' => EventStatus::class,
             'allows_ticket_cancellation' => 'boolean',
+            'started_at' => 'datetime',
         ];
     }
     public function venue(): BelongsTo

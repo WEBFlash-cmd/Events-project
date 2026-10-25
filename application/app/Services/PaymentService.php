@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EventStatus;
 use App\Events\OrderPaid;
+use App\Events\TicketPurchased;
 use App\Models\Event;
 use App\Models\Order;
 use App\Models\Payment;
@@ -163,7 +164,7 @@ class PaymentService
 
             foreach ($order->items as $item) {
                 for ($sequence = 1; $sequence <= $item->quantity; $sequence++) {
-                    $order->tickets()->create([
+                    $ticket = $order->tickets()->create([
                         'number' => (string) Str::uuid(),
                         'user_id' => $order->user_id,
                         'event_id' => $order->event_id,
@@ -172,6 +173,7 @@ class PaymentService
                         'sequence' => $sequence,
                         'status' => 'active',
                     ]);
+                    TicketPurchased::dispatch($ticket);
                 }
             }
 

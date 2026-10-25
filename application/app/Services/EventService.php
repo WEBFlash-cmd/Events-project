@@ -58,6 +58,9 @@ class EventService
                 }
             }
 
+            if ($event->isDirty('starts_at')) {
+                $event->started_at = null;
+            }
             $event->save();
 
             return $event;
