@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\EventStatus;
+use App\Events\TicketAvailabilityChanged;
 use App\Models\Event;
 use App\Models\TicketType;
 use Illuminate\Database\Eloquent\Collection;
@@ -42,9 +43,10 @@ class TicketTypeService
 
             unset($data['event_id']);
             $ticketType->update($data);
+            TicketAvailabilityChanged::dispatch($event);
 
             return $ticketType;
-        });
+        })->fresh();
     }
 
     private function ensureCapacity(Event $event, int $quantity, ?int $exceptId = null): void

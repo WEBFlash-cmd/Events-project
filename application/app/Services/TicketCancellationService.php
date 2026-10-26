@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\EventStatus;
+use App\Events\TicketAvailabilityChanged;
 use App\Models\Event;
 use App\Models\Order;
 use App\Models\Ticket;
@@ -49,6 +50,7 @@ class TicketCancellationService
             $type->increment('quantity');
             $payment->update(['status' => $refund > 0 ? 'refund_required' : 'paid',
                 'refund_required' => $refund > 0, 'refund_amount' => $refund]);
+            TicketAvailabilityChanged::dispatch($event);
 
             return $ticket->load(['event.venue', 'ticketType', 'order:id,status']);
         }, 3);
