@@ -16,8 +16,19 @@ use App\Http\Controllers\EventReportController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\PurchaseController as AdminPurchaseController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
+use App\Http\Controllers\WaitlistController;
 
 Route::patterns(array_fill_keys(['event', 'order', 'ticket', 'ticketType', 'user', 'category'], '[0-9]+'));
+
+Route::get('/waitlist', [WaitlistController::class, 'index'])->middleware('auth:sanctum');
+
+Route::prefix('/events/{event}/ticket-types/{ticketType}/waitlist')->middleware('auth:sanctum')
+    ->scopeBindings()->group(function () {
+        Route::post('/', [WaitlistController::class, 'store']);
+        Route::get('/', [WaitlistController::class, 'show']);
+        Route::delete('/', [WaitlistController::class, 'destroy']);
+        Route::post('/checkout', [WaitlistController::class, 'checkout']);
+    });
 
 Route::get('/admin/events', [AdminEventController::class, 'index'])
     ->middleware(['auth:sanctum', 'can:viewAny,App\Models\Event']);

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\TicketAvailabilityChanged;
 use App\Models\Event;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +58,7 @@ class OrderReservationService
         }
 
         $order->update(['status' => $status]);
+        TicketAvailabilityChanged::dispatch($order->event);
 
         return $order->load('items');
     }

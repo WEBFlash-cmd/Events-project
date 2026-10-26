@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Models\Order;
 use App\Services\OrderReservationService;
 use App\Services\PaymentService;
+use App\Services\WaitlistService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -36,9 +37,10 @@ class OrderController extends Controller
         return response()->json(['data' => $reservations->cancel($order)]);
     }
 
-    public function store(StoreOrderRequest $request, Event $event, PaymentService $payments): JsonResponse
+    public function store(StoreOrderRequest $request, Event $event, PaymentService $payments, WaitlistService $waitlist): JsonResponse
     {
-        $order = DB::transaction(function () use ($request, $event, $payments) {
+        $waitlist->process($event);
+        $order = DB::transaction(function () use ($request, $event, $payments, $waitlist) {
             $event = Event::query()->lockForUpdate()->findOrFail($event->id);
 
             if ($event->status !== EventStatus::PUBLISHED) {
@@ -76,6 +78,13 @@ class OrderController extends Controller
                 if ($item['quantity'] > $ticketType->quantity) {
                     throw ValidationException::withMessages([
                         "items.$index.quantity" => 'Not enough tickets available.',
+                    ]);
+                }
+
+                // A release may have committed after process() above, before this event lock.
+                if ($waitlist->hasPriority($event, $ticketType->id)) {
+                    throw ValidationException::withMessages([
+                        "items.$index.quantity" => 'Available tickets must first be offered to the waitlist.',
                     ]);
                 }
 
