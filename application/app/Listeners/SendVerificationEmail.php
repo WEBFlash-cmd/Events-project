@@ -4,11 +4,14 @@ namespace App\Listeners;
 
 use App\Services\AuthService;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueueAfterCommit;
 
-class SendVerificationEmail
+class SendVerificationEmail implements ShouldQueueAfterCommit
 {
+    public string $queue = 'notifications';
+    public int $tries = 3;
+    public array $backoff = [10, 60];
+
     /**
      * Create the event listener.
      */

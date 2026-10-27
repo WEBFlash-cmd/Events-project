@@ -39,6 +39,7 @@ class OrderController extends Controller
 
     public function store(StoreOrderRequest $request, Event $event, PaymentService $payments, WaitlistService $waitlist): JsonResponse
     {
+        // Release expired offers independently of whether this new purchase passes validation.
         $waitlist->process($event);
         $order = DB::transaction(function () use ($request, $event, $payments, $waitlist) {
             $event = Event::query()->lockForUpdate()->findOrFail($event->id);

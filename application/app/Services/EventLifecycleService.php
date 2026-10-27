@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EventStatus;
 use App\Events\EventStarted;
+use App\Events\EventAvailabilityChanged;
 use App\Models\Event;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +23,7 @@ class EventLifecycleService
             if ($event->started_at === null) {
                 $event->started_at = $event->starts_at;
                 $event->save();
+                EventAvailabilityChanged::dispatch($event);
                 EventStarted::dispatch($event);
                 $changed = true;
             }

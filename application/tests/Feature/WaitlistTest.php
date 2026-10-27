@@ -3,8 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\EventStatus;
-use App\Events\OrderPaid;
-use App\Events\TicketAvailabilityChanged;
+use App\Events\EventAvailabilityChanged;
 use App\Jobs\SendWaitlistOffer;
 use App\Listeners\ProcessWaitlist;
 use App\Mail\WaitlistOffer;
@@ -457,8 +456,7 @@ class WaitlistTest extends TestCase
     public function testWaitlistListenersAreDiscovered(): void
     {
         \Illuminate\Support\Facades\Event::fake();
-        \Illuminate\Support\Facades\Event::assertListening(TicketAvailabilityChanged::class, ProcessWaitlist::class);
-        \Illuminate\Support\Facades\Event::assertListening(OrderPaid::class, ProcessWaitlist::class);
+        \Illuminate\Support\Facades\Event::assertListening(EventAvailabilityChanged::class, ProcessWaitlist::class);
     }
 
     public function testOwnWaitlistIsPaginatedFilterableAndDoesNotExposeOtherUsers(): void

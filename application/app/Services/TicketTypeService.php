@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EventStatus;
 use App\Events\TicketAvailabilityChanged;
+use App\Events\EventAvailabilityChanged;
 use App\Models\Event;
 use App\Models\TicketType;
 use Illuminate\Database\Eloquent\Collection;
@@ -43,6 +44,7 @@ class TicketTypeService
 
             unset($data['event_id']);
             $ticketType->update($data);
+            EventAvailabilityChanged::dispatch($event);
             TicketAvailabilityChanged::dispatch($event);
 
             return $ticketType;

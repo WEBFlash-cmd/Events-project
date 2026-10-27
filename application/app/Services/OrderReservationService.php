@@ -3,15 +3,16 @@
 namespace App\Services;
 
 use App\Events\TicketAvailabilityChanged;
+use App\Events\EventAvailabilityChanged;
 use App\Models\Event;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 
 class OrderReservationService
 {
-    public function cancel(Order $order): Order
+    public function cancel(Order $order, bool $processWaitlist = true): Order
     {
-        return DB::transaction(function () use ($order) {
+        return DB::transaction(function () use ($order, $processWaitlist) {
             // All reservation changes lock the event first, then the order and ticket types.
             Event::query()->lockForUpdate()->findOrFail($order->event_id);
             $order = Order::query()->lockForUpdate()->findOrFail($order->id);
@@ -24,13 +25,13 @@ class OrderReservationService
 
             $status = $order->expires_at?->lessThanOrEqualTo(now()) ? 'expired' : 'cancelled';
 
-            return $this->release($order, $status);
+            return $this->release($order, $status, $processWaitlist);
         }, 3);
     }
 
-    public function expire(Order $order): bool
+    public function expire(Order $order, bool $processWaitlist = true): bool
     {
-        return DB::transaction(function () use ($order) {
+        return DB::transaction(function () use ($order, $processWaitlist) {
             Event::query()->lockForUpdate()->findOrFail($order->event_id);
             $order = Order::query()->lockForUpdate()->findOrFail($order->id);
 
@@ -40,13 +41,13 @@ class OrderReservationService
                 return false;
             }
 
-            $this->release($order, 'expired');
+            $this->release($order, 'expired', $processWaitlist);
 
             return true;
         }, 3);
     }
 
-    private function release(Order $order, string $status): Order
+    private function release(Order $order, string $status, bool $processWaitlist): Order
     {
         $items = $order->items()->orderBy('ticket_type_id')->get();
         $ticketTypes = $order->event->ticketTypes()
@@ -58,6 +59,10 @@ class OrderReservationService
         }
 
         $order->update(['status' => $status]);
+        // A caller already processing the whole waitlist must not re-enter it mid-pass.
+        if ($processWaitlist) {
+            EventAvailabilityChanged::dispatch($order->event);
+        }
         TicketAvailabilityChanged::dispatch($order->event);
 
         return $order->load('items');

@@ -19,6 +19,7 @@ class WaitlistService
 
     public function join(Event $event, TicketType $type, User $user): WaitlistEntry
     {
+        // Maintenance is independent: an expired offer stays released even if joining is rejected.
         $this->process($event);
 
         return DB::transaction(function () use ($event, $type, $user) {
@@ -60,10 +61,10 @@ class WaitlistService
             $order = $entry->order;
             $entry->update(['status' => $order?->status === 'paid' ? 'purchased' : 'cancelled']);
             if ($order?->status === 'pending') {
-                $this->reservations->cancel($order);
+                $this->reservations->cancel($order, processWaitlist: false);
             }
+            $this->process($event);
         }, 3);
-        $this->process($event);
     }
 
     public function accept(Event $event, TicketType $type, User $user): Order
@@ -118,9 +119,9 @@ class WaitlistService
                     $order = Order::query()->lockForUpdate()->findOrFail($entry->order_id);
                     if ($order->status === 'pending') {
                         if (!$open || $entry->user->is_blocked) {
-                            $this->reservations->cancel($order);
+                            $this->reservations->cancel($order, processWaitlist: false);
                         } else {
-                            $this->reservations->expire($order);
+                            $this->reservations->expire($order, processWaitlist: false);
                         }
                         $order->refresh();
                     }

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\EventStatus;
 use App\Events\OrderEventCancelled;
 use App\Events\EventCancelled;
+use App\Events\EventAvailabilityChanged;
 use App\Models\Event;
 use App\Models\Order;
 use App\Models\User;
@@ -42,7 +43,8 @@ class EventCancellationService
                             continue;
                         }
                         if ($order->status === 'pending') {
-                            $this->reservations->cancel($order);
+                            // Process the waitlist once, after all orders are updated, before commit.
+                            $this->reservations->cancel($order, processWaitlist: false);
                         } else {
                             $order->payment()->whereIn('status', ['paid', 'refund_required'])->update([
                                 'status' => 'refund_required', 'refund_required' => true,
@@ -55,6 +57,7 @@ class EventCancellationService
                     }
                 });
 
+            EventAvailabilityChanged::dispatch($event);
             EventCancelled::dispatch($event);
 
             return $event;
