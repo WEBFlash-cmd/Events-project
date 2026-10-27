@@ -1,3 +1,5 @@
+import './account.js';
+
 const form = document.querySelector('#filters');
 
 if (form) {

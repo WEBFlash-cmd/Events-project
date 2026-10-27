@@ -3,16 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="Находите мероприятия, встречи и новые впечатления в каталоге Events.">
     <title>Events — найди своё событие</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <a class="skip-link" href="#catalog">Перейти к мероприятиям</a>
-    <header class="site-header wrap">
-        <a class="brand" href="{{ route('catalog') }}" aria-label="Events — главная"><span class="brand-mark">e</span>events<span class="brand-dot">.</span></a>
-        <a class="nav-link" href="#catalog">Афиша мероприятий ↗</a>
-    </header>
+    @include('partials.header')
     <main>
         <section class="hero wrap" aria-labelledby="hero-title">
             <div class="hero-copy">
