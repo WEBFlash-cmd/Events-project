@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EventStatus;
 use App\Events\OrderPaid;
+use App\Events\EventAvailabilityChanged;
 use App\Events\TicketPurchased;
 use App\Models\Event;
 use App\Models\Order;
@@ -177,6 +178,7 @@ class PaymentService
                 }
             }
 
+            EventAvailabilityChanged::dispatch($event);
             OrderPaid::dispatch($order);
         }, 3);
     }

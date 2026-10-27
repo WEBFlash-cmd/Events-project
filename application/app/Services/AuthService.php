@@ -20,16 +20,19 @@ class AuthService
 {
     public function register(RegistrationData $data): User
     {
-        $role = Role::where('name', UserRole::PARTICIPANT->value)
-            ->firstOrFail();
-        $user = User::create([
-            'email' => $data->email,
-            'password' => $data->password,
-        ]);
-        $user->rbacRole()->associate($role);
-        $user->save();
-        event(new Registered($user));
-        return $user;
+        return DB::transaction(function () use ($data) {
+            $role = Role::where('name', UserRole::PARTICIPANT->value)->firstOrFail();
+            $user = User::create([
+                'email' => $data->email,
+                'password' => $data->password,
+            ]);
+            $user->rbacRole()->associate($role);
+            $user->save();
+            // The queued listener sends verification only after the outer transaction commits.
+            event(new Registered($user));
+
+            return $user;
+        });
     }
 
     public function login(LoginData $data): array
