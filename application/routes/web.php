@@ -12,6 +12,8 @@ use App\Http\Controllers\OrganizerEventPageController;
 use App\Http\Controllers\OrganizerTicketTypePageController;
 use App\Http\Controllers\OrganizerReportPageController;
 use App\Http\Controllers\AdminUserPageController;
+use App\Http\Controllers\AdminCategoryPageController;
+use App\Http\Controllers\AdminVenuePageController;
 
 Route::get('/', CatalogController::class)->name('catalog');
 Route::get('/events/{event}', [CheckoutController::class, 'event'])->whereNumber('event')->name('events.show');
@@ -27,6 +29,28 @@ Route::view('/verify-email', 'auth.verify')->name('verification');
 Route::post('/verify-email', [BrowserAuthController::class, 'verify'])->middleware('throttle:10,1');
 
 Route::middleware(['auth:web', 'auth.session'])->group(function () {
+    Route::prefix('/admin/categories')->middleware('can:categories.view')->group(function () {
+        Route::get('/', [AdminCategoryPageController::class, 'index'])->name('admin.categories.index');
+        Route::get('/create', [AdminCategoryPageController::class, 'create'])->middleware('can:categories.create')->name('admin.categories.create');
+        Route::post('/', [AdminCategoryPageController::class, 'store'])->middleware(['can:categories.create', 'throttle:20,1'])->name('admin.categories.store');
+        Route::get('/{category}/edit', [AdminCategoryPageController::class, 'edit'])->whereNumber('category')
+            ->middleware('can:categories.update')->name('admin.categories.edit');
+        Route::patch('/{category}', [AdminCategoryPageController::class, 'update'])->whereNumber('category')
+            ->middleware(['can:categories.update', 'throttle:20,1'])->name('admin.categories.update');
+        Route::delete('/{category}', [AdminCategoryPageController::class, 'destroy'])->whereNumber('category')
+            ->middleware(['can:categories.delete', 'throttle:20,1'])->name('admin.categories.destroy');
+    });
+    Route::prefix('/admin/venues')->middleware('can:venues.view')->group(function () {
+        Route::get('/', [AdminVenuePageController::class, 'index'])->name('admin.venues.index');
+        Route::get('/create', [AdminVenuePageController::class, 'create'])->middleware('can:venues.create')->name('admin.venues.create');
+        Route::post('/', [AdminVenuePageController::class, 'store'])->middleware(['can:venues.create', 'throttle:20,1'])->name('admin.venues.store');
+        Route::get('/{venue}/edit', [AdminVenuePageController::class, 'edit'])->whereNumber('venue')
+            ->middleware('can:venues.update')->name('admin.venues.edit');
+        Route::patch('/{venue}', [AdminVenuePageController::class, 'update'])->whereNumber('venue')
+            ->middleware(['can:venues.update', 'throttle:20,1'])->name('admin.venues.update');
+        Route::delete('/{venue}', [AdminVenuePageController::class, 'destroy'])->whereNumber('venue')
+            ->middleware(['can:venues.delete', 'throttle:20,1'])->name('admin.venues.destroy');
+    });
     Route::prefix('/admin/users')->middleware('can:users.view')->group(function () {
         Route::get('/', [AdminUserPageController::class, 'index'])->name('admin.users.index');
         Route::get('/{user}', [AdminUserPageController::class, 'show'])->whereNumber('user')->name('admin.users.show');

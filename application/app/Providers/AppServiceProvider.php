@@ -37,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
             'categories.delete',
             'venues.create',
             'venues.view',
+            'venues.update',
+            'venues.delete',
             'events.create',
         ];
 
