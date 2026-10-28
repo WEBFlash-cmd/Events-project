@@ -26,7 +26,7 @@ class TicketCheckInService
             abort_unless($ticket->order_id === $order->id && $order->event_id === $event->id
                 && $order->user_id === $ticket->user_id && $order->status === 'paid',
                 409, 'The ticket must belong to a paid order for this event.');
-            abort_unless($ticket->status === 'active' && $ticket->checked_in_at === null,
+            abort_unless($ticket->status === 'active' && $ticket->checked_in_at === null && !$ticket->refund_required,
                 409, 'The ticket is not active or has already been used.');
 
             $ticket->status = 'used';

@@ -8,6 +8,7 @@
         <p class="muted">{{ $event->venue->name }} · <time data-date="{{ $event->starts_at->toIso8601String() }}">{{ $event->starts_at->format('d.m.Y H:i') }} UTC</time></p>
         <p>Типов билетов: {{ $event->ticket_types_count }}</p></div>
         <div class="purchase-side">@can('update', $event)<a class="page-button" href="{{ route('organizer.events.edit', $event) }}">Редактировать ↗</a>@endcan
+            @can('viewReports', $event)<a class="inline-link" href="{{ route('organizer.reports.sales', $event) }}">Отчёты и вход ↗</a>@endcan
             @can('update', $event)<a class="inline-link" href="{{ route('organizer.tickets.index', $event) }}">Типы билетов ↗</a>@endcan
             @if($event->status === \App\Enums\EventStatus::PUBLISHED)<a class="inline-link" href="{{ route('events.show', $event) }}">Открыть в афише ↗</a>@endif
         </div>
