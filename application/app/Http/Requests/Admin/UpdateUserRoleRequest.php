@@ -31,4 +31,9 @@ class UpdateUserRoleRequest extends FormRequest
             ],
         ];
     }
+
+    public function messages(): array
+    {
+        return ['role.required' => 'Выберите роль пользователя.', 'role.enum' => 'Выберите роль из списка.'];
+    }
 }

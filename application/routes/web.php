@@ -11,6 +11,7 @@ use App\Http\Controllers\WaitlistPageController;
 use App\Http\Controllers\OrganizerEventPageController;
 use App\Http\Controllers\OrganizerTicketTypePageController;
 use App\Http\Controllers\OrganizerReportPageController;
+use App\Http\Controllers\AdminUserPageController;
 
 Route::get('/', CatalogController::class)->name('catalog');
 Route::get('/events/{event}', [CheckoutController::class, 'event'])->whereNumber('event')->name('events.show');
@@ -26,6 +27,16 @@ Route::view('/verify-email', 'auth.verify')->name('verification');
 Route::post('/verify-email', [BrowserAuthController::class, 'verify'])->middleware('throttle:10,1');
 
 Route::middleware(['auth:web', 'auth.session'])->group(function () {
+    Route::prefix('/admin/users')->middleware('can:users.view')->group(function () {
+        Route::get('/', [AdminUserPageController::class, 'index'])->name('admin.users.index');
+        Route::get('/{user}', [AdminUserPageController::class, 'show'])->whereNumber('user')->name('admin.users.show');
+        Route::patch('/{user}/role', [AdminUserPageController::class, 'role'])->whereNumber('user')
+            ->middleware(['can:users.update-role', 'throttle:20,1'])->name('admin.users.role');
+        Route::patch('/{user}/block', [AdminUserPageController::class, 'block'])->whereNumber('user')
+            ->middleware(['can:users.block', 'throttle:20,1'])->name('admin.users.block');
+        Route::patch('/{user}/unblock', [AdminUserPageController::class, 'unblock'])->whereNumber('user')
+            ->middleware(['can:users.unblock', 'throttle:20,1'])->name('admin.users.unblock');
+    });
     Route::prefix('/organizer/events')->middleware('can:events.create')->group(function () {
         Route::prefix('/{event}/reports')->whereNumber(['event', 'ticket'])->middleware('can:viewReports,event')->scopeBindings()->group(function () {
             Route::get('/sales', [OrganizerReportPageController::class, 'sales'])->name('organizer.reports.sales');
