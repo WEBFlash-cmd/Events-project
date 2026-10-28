@@ -115,6 +115,12 @@ Route::get('/admin/categories/{category}', [CategoryController::class, 'show'])
 Route::post('/admin/venues', [VenueController::class, 'store'])
     ->middleware(['auth:sanctum', 'can:venues.create']);
 
+Route::patch('/admin/venues/{venue}', [VenueController::class, 'update'])->whereNumber('venue')
+    ->middleware(['auth:sanctum', 'can:venues.update']);
+
+Route::delete('/admin/venues/{venue}', [VenueController::class, 'destroy'])->whereNumber('venue')
+    ->middleware(['auth:sanctum', 'can:venues.delete']);
+
 Route::get('/venues', [VenueController::class, 'index'])
     ->middleware(['auth:sanctum', 'can:venues.view']);
 

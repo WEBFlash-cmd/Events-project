@@ -1,6 +1,7 @@
 @extends('layouts.site')
 @section('title', 'Пользователи — Events')
 @section('content')
+@include('admin.nav')
 <div class="account-heading"><p class="eyebrow">КАБИНЕТ АДМИНИСТРАТОРА</p><h1>Пользователи<span class="brand-dot">.</span></h1><p class="muted">Поиск аккаунтов, проверка роли и состояния доступа.</p></div>
 @if($errors->any())<div class="verification-banner is-error" role="alert">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
 <section class="account-card admin-filters"><form method="get" action="{{ route('admin.users.index') }}">

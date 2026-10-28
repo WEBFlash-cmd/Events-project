@@ -1,6 +1,7 @@
 @extends('layouts.site')
 @section('title', 'Управление аккаунтом — Events')
 @section('content')
+@include('admin.nav')
 <a class="inline-link back-link" href="{{ route('admin.users.index') }}">← Пользователи</a>
 <div class="account-heading"><p class="eyebrow">КАБИНЕТ АДМИНИСТРАТОРА · АККАУНТ №{{ $managedUser->id }}</p><h1 class="report-email">{{ $managedUser->name ?: 'Имя не указано' }}</h1><p class="muted report-email">{{ $managedUser->email }}</p></div>
 @if(session('admin_success'))<p class="verification-banner" role="status">{{ session('admin_success') }}</p>@endif

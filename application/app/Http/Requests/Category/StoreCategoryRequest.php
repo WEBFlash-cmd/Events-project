@@ -7,6 +7,17 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCategoryRequest extends FormRequest
 {
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Введите название категории.',
+            'name.string' => 'Название должно быть текстом.',
+            'name.max' => 'Название не должно превышать 255 символов.',
+            'name.unique' => 'Категория с таким названием уже существует.',
+            'description.string' => 'Описание должно быть текстом.',
+        ];
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */

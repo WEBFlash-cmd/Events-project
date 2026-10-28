@@ -45,7 +45,7 @@ class EventService
             }
 
             if ($event->isDirty('venue_id')) {
-                $venue = Venue::query()->findOrFail($event->venue_id);
+                $venue = Venue::query()->sharedLock()->findOrFail($event->venue_id);
                 $held = DB::table('order_items')->join('orders', 'orders.id', '=', 'order_items.order_id')
                     ->where('orders.event_id', $event->id)->whereIn('orders.status', ['pending', 'paid'])
                     ->sum('order_items.quantity');
