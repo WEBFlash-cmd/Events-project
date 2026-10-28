@@ -8,7 +8,7 @@ use App\Models\Event;
 use App\Models\Order;
 use App\Models\Venue;
 use App\Services\AdminEventService;
-use Illuminate\Http\Request;
+use App\Http\Requests\ConfirmWebActionRequest;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AdminEventPageController extends Controller
@@ -33,13 +33,8 @@ class AdminEventPageController extends Controller
         return response()->view('admin.events.show', compact('event', 'hasOrders'))->header('Cache-Control', 'private, no-store');
     }
 
-    public function destroy(Request $request, Event $event, AdminEventService $events)
+    public function destroy(ConfirmWebActionRequest $request, Event $event, AdminEventService $events)
     {
-        $request->validate(['confirm_delete' => ['required', 'accepted']], [
-            'confirm_delete.required' => 'Подтвердите удаление мероприятия.',
-            'confirm_delete.accepted' => 'Подтвердите удаление мероприятия.',
-        ]);
-
         try {
             $events->delete($event, $request->user());
         } catch (HttpException $exception) {

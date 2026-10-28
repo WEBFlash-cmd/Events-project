@@ -59,6 +59,17 @@ class BrowserAuthTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    public function testBrowserRegistrationRejectsMissingOrMalformedConfirmationBeforeCreatingUser(): void
+    {
+        $payload = ['email' => 'confirmation@example.test', 'password' => 'new-secret-123'];
+        $this->postJson('/register', $payload)->assertUnprocessable()->assertJsonValidationErrors('password_confirmation');
+        $this->postJson('/register', array_merge($payload, ['password_confirmation' => ['new-secret-123']]))
+            ->assertUnprocessable()->assertJsonValidationErrors('password_confirmation');
+        $this->assertDatabaseMissing('users', ['email' => $payload['email']]);
+        $this->assertGuest('web');
+        Mail::assertNothingSent();
+    }
+
     public function testLoginUsesSessionAndLogoutEndsIt(): void
     {
         $user = User::factory()->create();

@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Http\Requests\Admin\IndexAdminUsersRequest;
-use App\Http\Requests\Admin\UpdateUserRoleRequest;
+use App\Http\Requests\Admin\UpdateUserRolePageRequest;
+use App\Http\Requests\ConfirmWebActionRequest;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\UserAccessService;
@@ -41,33 +42,24 @@ class AdminUserPageController extends Controller
             ->header('Cache-Control', 'private, no-store');
     }
 
-    public function role(UpdateUserRoleRequest $request, User $user, UserAccessService $access)
+    public function role(UpdateUserRolePageRequest $request, User $user, UserAccessService $access)
     {
         $this->ensureAnotherUser($request, $user);
-        $request->validate(['confirm_role' => ['required', 'accepted']], [
-            'confirm_role.required' => 'Подтвердите смену роли.', 'confirm_role.accepted' => 'Подтвердите смену роли.',
-        ]);
         $access->changeRole($user, $request->validated('role'));
 
         return redirect()->route('admin.users.show', $user)->with('admin_success', 'Роль пользователя изменена.');
     }
 
-    public function block(Request $request, User $user, UserAccessService $access)
+    public function block(ConfirmWebActionRequest $request, User $user, UserAccessService $access)
     {
         $this->ensureAnotherUser($request, $user);
-        $request->validate(['confirm_block' => ['required', 'accepted']], [
-            'confirm_block.required' => 'Подтвердите блокировку пользователя.', 'confirm_block.accepted' => 'Подтвердите блокировку пользователя.',
-        ]);
         $access->block($user);
 
         return redirect()->route('admin.users.show', $user)->with('admin_success', 'Пользователь заблокирован. Доступ к защищённым действиям закрыт, API-токены отозваны.');
     }
 
-    public function unblock(Request $request, User $user, UserAccessService $access)
+    public function unblock(ConfirmWebActionRequest $request, User $user, UserAccessService $access)
     {
-        $request->validate(['confirm_unblock' => ['required', 'accepted']], [
-            'confirm_unblock.required' => 'Подтвердите разблокировку пользователя.', 'confirm_unblock.accepted' => 'Подтвердите разблокировку пользователя.',
-        ]);
         $access->unblock($user);
 
         return redirect()->route('admin.users.show', $user)->with('admin_success', 'Пользователь разблокирован. Отозванные API-токены не восстанавливаются.');
