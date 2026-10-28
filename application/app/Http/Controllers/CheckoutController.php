@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Order\StoreCheckoutRequest;
 use App\Models\Event;
 use App\Models\Order;
+use App\Models\WaitlistEntry;
 use App\Services\EventService;
 use App\Services\OrderCheckoutService;
 use App\Services\PaymentService;
@@ -20,7 +21,13 @@ class CheckoutController extends Controller
             $request->session()->put('url.intended', route('events.show', $event));
         }
 
-        return view('checkout.event', ['event' => $event->load('ticketTypes')]);
+        $waitlistEntries = $request->user('web')
+            ? WaitlistEntry::query()->where('event_id', $event->id)->where('user_id', $request->user('web')->id)
+                ->whereIn('status', ['waiting', 'offered'])->get()->keyBy('ticket_type_id')
+            : collect();
+
+        return response()->view('checkout.event', ['event' => $event->load('ticketTypes'), 'waitlistEntries' => $waitlistEntries])
+            ->header('Cache-Control', 'private, no-store');
     }
 
     public function store(StoreCheckoutRequest $request, Event $event, OrderCheckoutService $checkout, PaymentService $payments)
