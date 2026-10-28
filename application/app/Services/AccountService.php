@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Events\EmailVerificationRequested;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -11,10 +12,6 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class AccountService
 {
-    public function __construct(private AuthService $auth)
-    {
-    }
-
     public function logout(User $user): void
     {
         $token = $user->currentAccessToken();
@@ -32,13 +29,14 @@ class AccountService
                 $this->checkCurrentPassword($user, $data['current_password'] ?? '');
                 $user->email = $data['email'];
                 $user->email_verified_at = null;
+                $user->verification_email_sent_at = null;
             }
             if (array_key_exists('name', $data)) {
                 $user->name = $data['name'];
             }
             $user->save();
             if ($emailChanged) {
-                DB::afterCommit(fn () => $this->auth->sendVerificationEmail($user));
+                EmailVerificationRequested::dispatch($user);
             }
             return $user;
         });
