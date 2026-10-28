@@ -14,6 +14,8 @@
                     auth()->user()->can('categories.view') => 'admin.categories.index',
                     auth()->user()->canAny(['venues.create', 'venues.update', 'venues.delete']) => 'admin.venues.index',
                     auth()->user()->can('viewAny', \App\Models\Event::class) => 'admin.events.index',
+                    auth()->user()->can('viewAny', \App\Models\Order::class) => 'admin.purchases.orders',
+                    auth()->user()->can('viewAny', \App\Models\Ticket::class) => 'admin.purchases.tickets',
                     default => null,
                 };
             @endphp
