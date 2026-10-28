@@ -11,6 +11,7 @@
             <p id="reservation-time" class="verification-banner" hidden></p>
             <a id="payment-link" class="primary-button checkout-login" hidden rel="noreferrer">Перейти к оплате ↗</a>
             <p class="field-hint">После оплаты вернитесь на эту страницу. Переход из платёжки сам по себе не подтверждает покупку — ждём подтверждения сервера.</p>
+            @if($order->status === 'pending' && !$order->payment)<p class="verification-banner">Предложение из очереди сначала нужно принять. <a class="inline-link" href="{{ route('waitlist.index') }}">Открыть лист ожидания ↗</a></p>@endif
             <div class="order-actions"><button id="refresh-order" class="page-button" type="button">Проверить статус</button><button id="cancel-order" class="text-button" type="button" hidden>Отменить заказ</button></div>
             <p id="order-feedback" class="form-feedback" role="status" hidden></p>
             <div id="order-tickets" class="order-tickets" hidden><h3>Ваши билеты</h3><ul></ul></div>

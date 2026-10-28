@@ -7,6 +7,7 @@ use App\Http\Controllers\BrowserAuthController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PurchasePageController;
+use App\Http\Controllers\WaitlistPageController;
 
 Route::get('/', CatalogController::class)->name('catalog');
 Route::get('/events/{event}', [CheckoutController::class, 'event'])->whereNumber('event')->name('events.show');
@@ -22,6 +23,13 @@ Route::view('/verify-email', 'auth.verify')->name('verification');
 Route::post('/verify-email', [BrowserAuthController::class, 'verify'])->middleware('throttle:10,1');
 
 Route::middleware(['auth:web', 'auth.session'])->group(function () {
+    Route::get('/waitlist', [WaitlistPageController::class, 'index'])->name('waitlist.index');
+    Route::prefix('/events/{event}/ticket-types/{ticketType}/waitlist')->whereNumber(['event', 'ticketType'])
+        ->middleware('throttle:20,1')->group(function () {
+            Route::post('/join', [WaitlistPageController::class, 'join'])->name('waitlist.join');
+            Route::post('/leave', [WaitlistPageController::class, 'leave'])->name('waitlist.leave');
+            Route::post('/accept', [WaitlistPageController::class, 'accept'])->name('waitlist.accept');
+        });
     Route::get('/orders', [PurchasePageController::class, 'orders'])->name('purchases.orders');
     Route::get('/tickets', [PurchasePageController::class, 'tickets'])->name('purchases.tickets');
     Route::get('/tickets/{ticket}', [PurchasePageController::class, 'ticket'])->whereNumber('ticket')->name('purchases.ticket');

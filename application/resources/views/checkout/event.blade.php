@@ -35,6 +35,7 @@
                 <p class="muted">Для покупки войдите в аккаунт. После входа вернём вас к этому мероприятию.</p><a class="primary-button checkout-login" href="{{ route('login') }}">Войти и выбрать билеты ↗</a>
             @endauth
         </form>
+        @include('waitlist.event-options')
     </aside>
 </section>
 @endsection
