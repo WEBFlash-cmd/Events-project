@@ -4,6 +4,8 @@
 <a class="inline-link back-link" href="{{ route('organizer.events.index') }}">← Мои мероприятия</a>
 <div class="account-heading"><p class="eyebrow">КАБИНЕТ ОРГАНИЗАТОРА @if($event->exists) · @include('organizer.events.status') @endif</p><h1>{{ $event->exists ? 'Редактирование мероприятия' : 'Новое мероприятие' }}</h1><p class="muted">{{ $event->status === \App\Enums\EventStatus::PUBLISHED ? 'Изменения опубликованного мероприятия сразу видны в афише.' : 'Сохранение данных не публикует мероприятие в афише.' }}</p></div>
 @if(session('event_success'))<p class="verification-banner" role="status">{{ session('event_success') }}</p>@endif
+@if(session('event_error'))<p class="verification-banner is-error" role="alert">{{ session('event_error') }}</p>@endif
+@if($event->exists)@include('organizer.events.actions')@endif
 @if($errors->any())
     <div class="verification-banner is-error" role="alert"><strong>Не удалось сохранить мероприятие.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
 @endif
