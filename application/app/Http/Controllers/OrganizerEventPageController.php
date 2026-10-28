@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Event\StoreEventRequest;
-use App\Http\Requests\Event\UpdateEventRequest;
+use App\Http\Requests\Event\StoreEventPageRequest;
+use App\Http\Requests\Event\UpdateEventPageRequest;
 use App\Http\Requests\ConfirmWebActionRequest;
 use App\Models\Category;
 use App\Models\Event;
@@ -30,7 +30,7 @@ class OrganizerEventPageController extends Controller
         return $this->form(new Event());
     }
 
-    public function store(StoreEventRequest $request, EventService $events)
+    public function store(StoreEventPageRequest $request, EventService $events)
     {
         $event = $events->createEvent($request->validated(), $request->user());
 
@@ -42,7 +42,7 @@ class OrganizerEventPageController extends Controller
         return $this->form($event);
     }
 
-    public function update(UpdateEventRequest $request, Event $event, EventService $events)
+    public function update(UpdateEventPageRequest $request, Event $event, EventService $events)
     {
         $events->updateEvent($event, $request->validated());
 

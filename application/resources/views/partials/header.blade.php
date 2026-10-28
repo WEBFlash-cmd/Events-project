@@ -1,5 +1,5 @@
 <header class="site-header wrap">
-    <a class="brand" href="{{ route('catalog') }}" aria-label="Events — главная"><span class="brand-mark">e</span>events<span class="brand-dot">.</span></a>
+    @include('partials.brand')
     <nav class="header-nav" aria-label="Основная навигация">
         <a class="nav-link" href="{{ route('catalog') }}#catalog">Афиша ↗</a>
         @auth('web')

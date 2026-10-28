@@ -50,11 +50,11 @@ class UpdateEventRequest extends StoreEventRequest
                 $event = $this->route('event');
 
                 $startsAt = Carbon::parse(
-                    $this->input('starts_at', $event->starts_at)
+                    $validator->getData()['starts_at'] ?? $event->starts_at
                 );
 
                 $endsAt = Carbon::parse(
-                    $this->input('ends_at', $event->ends_at)
+                    $validator->getData()['ends_at'] ?? $event->ends_at
                 );
 
                 if ($endsAt->lessThanOrEqualTo($startsAt)) {

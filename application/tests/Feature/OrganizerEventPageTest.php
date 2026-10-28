@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Venue;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\Concerns\CreatesOrderContext;
 use Tests\TestCase;
 
@@ -25,8 +26,8 @@ class OrganizerEventPageTest extends TestCase
     private function payload(Event $event): array
     {
         return ['title' => 'Новое мероприятие', 'description' => 'Подробное описание',
-            'starts_at' => now()->addDays(5)->format('Y-m-d\TH:i:s'),
-            'ends_at' => now()->addDays(5)->addHours(2)->format('Y-m-d\TH:i:s'),
+            'starts_at' => now()->addDays(5)->setTimezone('Asia/Tashkent')->format('Y-m-d\TH:i:s'),
+            'ends_at' => now()->addDays(5)->addHours(2)->setTimezone('Asia/Tashkent')->format('Y-m-d\TH:i:s'),
             'venue_id' => $event->venue_id, 'category_id' => $event->category_id,
             'allows_ticket_cancellation' => '1'];
     }
@@ -69,7 +70,7 @@ class OrganizerEventPageTest extends TestCase
         $organizer = User::factory()->create(['role' => UserRole::ORGANIZER]);
         $this->actingAs($organizer)->get('/organizer/events')->assertSee('Мероприятий пока нет');
         $this->get('/organizer/events/create')->assertOk()->assertSee($event->category->name)->assertSee($event->venue->name)
-            ->assertSee('Создать черновик')->assertSee('Начало (UTC)')->assertHeader('Cache-Control', 'no-store, private');
+            ->assertSee('Создать черновик')->assertSee('Начало (Ташкент)')->assertHeader('Cache-Control', 'no-store, private');
     }
 
     public function testCreationAssignsOwnerAndDraftAndPreservesDatesAndCancellationSetting(): void
@@ -80,7 +81,7 @@ class OrganizerEventPageTest extends TestCase
         $created = Event::query()->latest('id')->firstOrFail();
         $this->assertSame($event->organizer_id, $created->organizer_id);
         $this->assertSame('draft', $created->status->value);
-        $this->assertSame($payload['starts_at'], $created->starts_at->format('Y-m-d\TH:i:s'));
+        $this->assertSame($payload['starts_at'], $created->starts_at->copy()->setTimezone('Asia/Tashkent')->format('Y-m-d\TH:i:s'));
         $this->assertTrue($created->allows_ticket_cancellation);
         $this->get('/organizer/events/'.$created->id.'/edit')->assertSee('Черновик мероприятия создан.')->assertSee('Новое мероприятие');
         $this->get('/events/'.$created->id)->assertNotFound();
@@ -145,8 +146,8 @@ class OrganizerEventPageTest extends TestCase
             'category_id' => $event->category_id])->assertRedirect();
         $this->assertSame('Обновлённое название', $event->fresh()->title);
         $this->assertTrue($event->starts_at->equalTo($event->fresh()->starts_at));
-        $this->patch('/organizer/events/'.$event->id, ['starts_at' => now()->addDays(9)->toDateTimeString(),
-            'ends_at' => now()->addDays(9)->addHour()->toDateTimeString(), 'allows_ticket_cancellation' => '1'])
+        $this->patch('/organizer/events/'.$event->id, ['starts_at' => now()->addDays(9)->setTimezone('Asia/Tashkent')->format('Y-m-d\TH:i:s'),
+            'ends_at' => now()->addDays(9)->addHour()->setTimezone('Asia/Tashkent')->format('Y-m-d\TH:i:s'), 'allows_ticket_cancellation' => '1'])
             ->assertSessionHasErrors(['starts_at', 'ends_at', 'allows_ticket_cancellation']);
     }
 
@@ -155,7 +156,7 @@ class OrganizerEventPageTest extends TestCase
         [, $event] = $this->createOrderContext();
         $event->update(['starts_at' => now()->subHour(), 'ends_at' => now()->addHour()]);
         $this->actingAs($event->organizer)->get('/organizer/events/'.$event->id.'/edit')->assertSee('Начало уже наступило');
-        $this->patch('/organizer/events/'.$event->id, ['title' => 'Исправлено', 'ends_at' => $event->ends_at->format('Y-m-d\TH:i:s')])->assertRedirect();
+        $this->patch('/organizer/events/'.$event->id, ['title' => 'Исправлено', 'ends_at' => $event->ends_at->copy()->setTimezone('Asia/Tashkent')->format('Y-m-d\TH:i:s')])->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame('Исправлено', $event->fresh()->title);
     }
 
@@ -166,7 +167,7 @@ class OrganizerEventPageTest extends TestCase
         $this->actingAs($event->organizer)->patch('/organizer/events/'.$event->id, ['title' => 'Не сохранять', 'venue_id' => $small->id])
             ->assertSessionHasErrors('venue_id');
         $this->assertSame('Test event', $event->fresh()->title);
-        $this->patch('/organizer/events/'.$event->id, ['ends_at' => $event->starts_at->copy()->subHour()->toDateTimeString()])
+        $this->patch('/organizer/events/'.$event->id, ['ends_at' => $event->starts_at->copy()->subHour()->setTimezone('Asia/Tashkent')->format('Y-m-d\TH:i:s')])
             ->assertSessionHasErrors('ends_at');
     }
 
@@ -210,5 +211,43 @@ class OrganizerEventPageTest extends TestCase
         $this->withMiddleware(PreventRequestForgery::class)->post('/organizer/events', $this->payload($event))->assertStatus(419);
         $this->patch('/organizer/events/'.$event->id, ['title' => 'CSRF'])->assertStatus(419);
         $this->assertDatabaseCount('events', 1);
+    }
+
+    public function testTashkentDatesConvertToUtcAcrossMidnightAndDoNotShiftOnResave(): void
+    {
+        $this->travelTo(Carbon::parse('2030-01-01 10:00:00', 'UTC'));
+        [, $template] = $this->createOrderContext();
+        $payload = array_replace($this->payload($template), ['starts_at' => '2030-01-02T01:00', 'ends_at' => '2030-01-02T03:00']);
+        $this->actingAs($template->organizer)->post('/organizer/events', $payload)->assertRedirect()->assertSessionHasNoErrors();
+        $event = Event::query()->latest('id')->firstOrFail();
+        $this->assertSame('2030-01-01 20:00:00', $event->starts_at->format('Y-m-d H:i:s'));
+        $this->assertSame('2030-01-01 22:00:00', $event->ends_at->format('Y-m-d H:i:s'));
+        $this->get('/organizer/events/'.$event->id.'/edit')->assertOk()->assertSee('2030-01-02T01:00:00', false);
+        $this->patch('/organizer/events/'.$event->id, $payload)->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertTrue($event->starts_at->equalTo($event->fresh()->starts_at));
+        $this->assertTrue($event->ends_at->equalTo($event->fresh()->ends_at));
+    }
+
+    public function testPastTimeIsRejectedAfterConversionAndFlashKeepsLocalInput(): void
+    {
+        $this->travelTo(Carbon::parse('2030-01-01 10:00:00', 'UTC'));
+        [, $event] = $this->createOrderContext();
+        $payload = array_replace($this->payload($event), ['starts_at' => '2030-01-01T14:00:00', 'ends_at' => '2030-01-01T18:00:00']);
+        $this->actingAs($event->organizer)->from('/organizer/events/create')->post('/organizer/events', $payload)
+            ->assertRedirect('/organizer/events/create')->assertSessionHasErrors('starts_at')
+            ->assertSessionHasInput('starts_at', '2030-01-01T14:00:00');
+        $this->assertDatabaseCount('events', 1);
+    }
+
+    public function testPartialEndUpdateComparesUtcWithPersistedStart(): void
+    {
+        $this->travelTo(Carbon::parse('2030-01-01 10:00:00', 'UTC'));
+        [, $event] = $this->createOrderContext();
+        $event->update(['starts_at' => '2030-01-02 10:00:00', 'ends_at' => '2030-01-02 12:00:00']);
+        $this->actingAs($event->organizer)->patch('/organizer/events/'.$event->id, ['ends_at' => '2030-01-02T14:00'])
+            ->assertSessionHasErrors('ends_at');
+        $this->assertSame('2030-01-02 12:00:00', $event->fresh()->ends_at->format('Y-m-d H:i:s'));
+        $this->patch('/organizer/events/'.$event->id, ['ends_at' => '2030-01-02T16:00'])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('2030-01-02 11:00:00', $event->fresh()->ends_at->format('Y-m-d H:i:s'));
     }
 }
