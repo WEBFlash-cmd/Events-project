@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Event\StoreEventRequest;
 use App\Http\Requests\Event\UpdateEventRequest;
+use App\Http\Requests\ConfirmWebActionRequest;
 use App\Models\Category;
 use App\Models\Event;
 use App\Models\Order;
@@ -55,12 +56,8 @@ class OrganizerEventPageController extends Controller
         return redirect()->route('organizer.events.edit', $event)->with('event_success', 'Мероприятие опубликовано в афише.');
     }
 
-    public function cancel(Request $request, Event $event, EventCancellationService $events)
+    public function cancel(ConfirmWebActionRequest $request, Event $event, EventCancellationService $events)
     {
-        $request->validate(['confirm_cancel' => ['required', 'accepted']], [
-            'confirm_cancel.required' => 'Подтвердите отмену мероприятия.',
-            'confirm_cancel.accepted' => 'Подтвердите отмену мероприятия.',
-        ]);
         try {
             $events->cancel($event, $request->user());
         } catch (HttpException $exception) {

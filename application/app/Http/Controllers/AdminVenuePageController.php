@@ -7,7 +7,7 @@ use App\Http\Requests\Venue\StoreVenueRequest;
 use App\Http\Requests\Venue\UpdateVenueRequest;
 use App\Models\Venue;
 use App\Services\VenueService;
-use Illuminate\Http\Request;
+use App\Http\Requests\ConfirmWebActionRequest;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AdminVenuePageController extends Controller
@@ -48,13 +48,8 @@ class AdminVenuePageController extends Controller
         return redirect()->route('admin.venues.index')->with('admin_success', 'Площадка обновлена.');
     }
 
-    public function destroy(Request $request, Venue $venue, VenueService $venues)
+    public function destroy(ConfirmWebActionRequest $request, Venue $venue, VenueService $venues)
     {
-        $request->validate(['confirm_delete' => ['required', 'accepted']], [
-            'confirm_delete.required' => 'Подтвердите удаление площадки.',
-            'confirm_delete.accepted' => 'Подтвердите удаление площадки.',
-        ]);
-
         try {
             $venues->delete($venue);
         } catch (HttpException $exception) {

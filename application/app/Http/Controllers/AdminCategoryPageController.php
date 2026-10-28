@@ -7,7 +7,7 @@ use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Models\Category;
 use App\Services\CategoryService;
-use Illuminate\Http\Request;
+use App\Http\Requests\ConfirmWebActionRequest;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AdminCategoryPageController extends Controller
@@ -48,13 +48,8 @@ class AdminCategoryPageController extends Controller
         return redirect()->route('admin.categories.index')->with('admin_success', 'Категория обновлена.');
     }
 
-    public function destroy(Request $request, Category $category, CategoryService $categories)
+    public function destroy(ConfirmWebActionRequest $request, Category $category, CategoryService $categories)
     {
-        $request->validate(['confirm_delete' => ['required', 'accepted']], [
-            'confirm_delete.required' => 'Подтвердите удаление категории.',
-            'confirm_delete.accepted' => 'Подтвердите удаление категории.',
-        ]);
-
         try {
             $categories->deleteCategory($category);
         } catch (HttpException $exception) {

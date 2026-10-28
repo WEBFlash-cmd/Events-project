@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\VerificationCodeRequest;
-use App\Http\Requests\AuthRegistration;
+use App\Http\Requests\Auth\BrowserRegistrationRequest;
 use App\Http\Requests\Account\UpdatePasswordRequest;
 use App\Services\AccountService;
 use App\Services\AuthService;
@@ -14,10 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class BrowserAuthController extends Controller
 {
-    public function register(AuthRegistration $request, AuthService $auth)
+    public function register(BrowserRegistrationRequest $request, AuthService $auth)
     {
-        // The API registration rules are shared; confirmation is required by the browser form.
-        $request->validate(['password' => ['min:8', 'confirmed'], 'password_confirmation' => ['required', 'string']]);
         $user = $auth->register($request->toDTO());
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
