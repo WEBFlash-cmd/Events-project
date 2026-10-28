@@ -1,4 +1,5 @@
 import './account.js';
+import './checkout.js';
 
 const form = document.querySelector('#filters');
 
@@ -39,6 +40,7 @@ if (form) {
         const request = new AbortController();
         detailController = request;
         document.querySelector('#detail-title').textContent = event.title;
+        document.querySelector('#detail-checkout').href = `/events/${event.id}`;
         document.querySelector('#detail-meta').textContent = `${date(event.starts_at)} · ${event.venue?.name ?? 'Площадка уточняется'}`;
         const description = document.querySelector('#detail-description');
         description.textContent = 'Загружаем описание…';
@@ -71,6 +73,9 @@ if (form) {
         button.setAttribute('aria-label', `О мероприятии: ${event.title}`);
         button.addEventListener('click', () => showEvent(event));
         body.append(button);
+        const checkout = element('a', 'event-checkout-link', 'Выбрать билеты ↗');
+        checkout.href = `/events/${event.id}`;
+        body.append(checkout);
         card.append(art, body);
         return card;
     }

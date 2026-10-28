@@ -45,6 +45,6 @@
         </section>
     </main>
     <footer class="site-footer wrap"><a class="brand" href="{{ route('catalog') }}">events<span class="brand-dot">.</span></a><p>Меньше рутины. Больше впечатлений.</p><span>Встречаемся на событиях ↗</span></footer>
-    <dialog id="event-dialog" aria-labelledby="detail-title"><div class="dialog-header"><span class="eyebrow">О МЕРОПРИЯТИИ</span><button id="close-dialog" class="page-button" type="button" aria-label="Закрыть описание">✕</button></div><h2 id="detail-title"></h2><p id="detail-meta"></p><p id="detail-description"></p></dialog>
+    <dialog id="event-dialog" aria-labelledby="detail-title"><div class="dialog-header"><span class="eyebrow">О МЕРОПРИЯТИИ</span><button id="close-dialog" class="page-button" type="button" aria-label="Закрыть описание">✕</button></div><h2 id="detail-title"></h2><p id="detail-meta"></p><p id="detail-description"></p><a id="detail-checkout" class="primary-button checkout-login">Выбрать билеты ↗</a></dialog>
 </body>
 </html>
