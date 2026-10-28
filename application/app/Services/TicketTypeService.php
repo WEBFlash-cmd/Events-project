@@ -32,13 +32,18 @@ class TicketTypeService
         });
     }
 
-    public function updateTicketType(Event $event, TicketType $ticketType, array $data): TicketType
+    public function updateTicketType(Event $event, TicketType $ticketType, array $data, ?int $expectedQuantity = null): TicketType
     {
-        return DB::transaction(function () use ($event, $ticketType, $data): TicketType {
+        return DB::transaction(function () use ($event, $ticketType, $data, $expectedQuantity): TicketType {
             $event = Event::query()->lockForUpdate()->findOrFail($event->id);
             $ticketType = $event->ticketTypes()->findOrFail($ticketType->id);
 
             if (array_key_exists('quantity', $data)) {
+                if ($expectedQuantity !== null && $ticketType->quantity !== $expectedQuantity) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'Остаток изменился, пока вы редактировали форму. Проверьте текущее количество и повторите сохранение.',
+                    ]);
+                }
                 $this->ensureCapacity($event, (int) $data['quantity'], $ticketType->id);
             }
 

@@ -2,9 +2,8 @@
 
 namespace App\Http\Requests\TicketType;
 
-use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateTicketTypeRequest extends FormRequest
+class UpdateTicketTypeRequest extends StoreTicketTypeRequest
 {
     public function authorize(): bool
     {

@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PurchasePageController;
 use App\Http\Controllers\WaitlistPageController;
 use App\Http\Controllers\OrganizerEventPageController;
+use App\Http\Controllers\OrganizerTicketTypePageController;
 
 Route::get('/', CatalogController::class)->name('catalog');
 Route::get('/events/{event}', [CheckoutController::class, 'event'])->whereNumber('event')->name('events.show');
@@ -25,6 +26,19 @@ Route::post('/verify-email', [BrowserAuthController::class, 'verify'])->middlewa
 
 Route::middleware(['auth:web', 'auth.session'])->group(function () {
     Route::prefix('/organizer/events')->middleware('can:events.create')->group(function () {
+        Route::post('/{event}/publish', [OrganizerEventPageController::class, 'publish'])->whereNumber('event')
+            ->middleware(['can:publish,event', 'throttle:20,1'])->name('organizer.events.publish');
+        Route::post('/{event}/cancel', [OrganizerEventPageController::class, 'cancel'])->whereNumber('event')
+            ->middleware(['can:cancel,event', 'throttle:20,1'])->name('organizer.events.cancel');
+        Route::prefix('/{event}/ticket-types')->whereNumber(['event', 'ticketType'])->scopeBindings()
+            ->middleware('can:update,event')->group(function () {
+                Route::get('/', [OrganizerTicketTypePageController::class, 'index'])->name('organizer.tickets.index');
+                Route::get('/create', [OrganizerTicketTypePageController::class, 'create'])->middleware('can:create,App\Models\TicketType,event')->name('organizer.tickets.create');
+                Route::post('/', [OrganizerTicketTypePageController::class, 'store'])->middleware('throttle:20,1')->name('organizer.tickets.store');
+                Route::get('/{ticketType}/edit', [OrganizerTicketTypePageController::class, 'edit'])->middleware('can:update,ticketType,event')->name('organizer.tickets.edit');
+                Route::patch('/{ticketType}', [OrganizerTicketTypePageController::class, 'update'])->middleware('throttle:20,1')->name('organizer.tickets.update');
+                Route::patch('/{ticketType}/quantity', [OrganizerTicketTypePageController::class, 'quantity'])->middleware('throttle:20,1')->name('organizer.tickets.quantity');
+            });
         Route::get('/', [OrganizerEventPageController::class, 'index'])->name('organizer.events.index');
         Route::get('/create', [OrganizerEventPageController::class, 'create'])->name('organizer.events.create');
         Route::post('/', [OrganizerEventPageController::class, 'store'])->middleware('throttle:20,1')->name('organizer.events.store');

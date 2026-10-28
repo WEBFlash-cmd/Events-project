@@ -9,7 +9,9 @@ use App\Models\Event;
 use App\Models\Order;
 use App\Models\Venue;
 use App\Services\EventService;
+use App\Services\EventCancellationService;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OrganizerEventPageController extends Controller
 {
@@ -44,6 +46,34 @@ class OrganizerEventPageController extends Controller
         $events->updateEvent($event, $request->validated());
 
         return redirect()->route('organizer.events.edit', $event)->with('event_success', 'Изменения сохранены.');
+    }
+
+    public function publish(Event $event, EventService $events)
+    {
+        $events->publishEvent($event);
+
+        return redirect()->route('organizer.events.edit', $event)->with('event_success', 'Мероприятие опубликовано в афише.');
+    }
+
+    public function cancel(Request $request, Event $event, EventCancellationService $events)
+    {
+        $request->validate(['confirm_cancel' => ['required', 'accepted']], [
+            'confirm_cancel.required' => 'Подтвердите отмену мероприятия.',
+            'confirm_cancel.accepted' => 'Подтвердите отмену мероприятия.',
+        ]);
+        try {
+            $events->cancel($event, $request->user());
+        } catch (HttpException $exception) {
+            if ($exception->getStatusCode() !== 409) {
+                throw $exception;
+            }
+
+            return redirect()->route('organizer.events.edit', $event)->with('event_error',
+                'Отмена недоступна. Можно отменить только опубликованное мероприятие, которое ещё не закончилось.');
+        }
+
+        return redirect()->route('organizer.events.edit', $event)->with('event_success',
+            'Мероприятие отменено. Резервы сняты, по оплаченным заказам отмечены возвраты и запланированы уведомления.');
     }
 
     private function form(Event $event)
