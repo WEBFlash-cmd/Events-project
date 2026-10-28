@@ -34,4 +34,27 @@ class StoreEventRequest extends FormRequest
             'allows_ticket_cancellation' => ['sometimes', 'required', 'boolean'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'required' => 'Заполните поле «:attribute».',
+            'string' => 'Поле «:attribute» должно содержать текст.',
+            'title.max' => 'Название не должно превышать 255 символов.',
+            'date' => 'Укажите корректные дату и время в поле «:attribute».',
+            'starts_at.after' => 'Дата начала должна быть в будущем.',
+            'ends_at.after' => 'Дата окончания должна быть позже даты начала.',
+            'exists' => 'Выбранное значение поля «:attribute» больше недоступно.',
+            'integer' => 'Выберите корректное значение поля «:attribute».',
+            'boolean' => 'Укажите, разрешена ли отмена билетов.',
+            'prohibited' => 'Поле «:attribute» нельзя изменять через эту форму.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return ['title' => 'Название', 'description' => 'Описание', 'starts_at' => 'Начало',
+            'ends_at' => 'Окончание', 'venue_id' => 'Площадка', 'category_id' => 'Категория',
+            'organizer_id' => 'Организатор', 'status' => 'Статус', 'allows_ticket_cancellation' => 'Отмена билетов'];
+    }
 }

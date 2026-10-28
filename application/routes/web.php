@@ -8,6 +8,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PurchasePageController;
 use App\Http\Controllers\WaitlistPageController;
+use App\Http\Controllers\OrganizerEventPageController;
 
 Route::get('/', CatalogController::class)->name('catalog');
 Route::get('/events/{event}', [CheckoutController::class, 'event'])->whereNumber('event')->name('events.show');
@@ -23,6 +24,15 @@ Route::view('/verify-email', 'auth.verify')->name('verification');
 Route::post('/verify-email', [BrowserAuthController::class, 'verify'])->middleware('throttle:10,1');
 
 Route::middleware(['auth:web', 'auth.session'])->group(function () {
+    Route::prefix('/organizer/events')->middleware('can:events.create')->group(function () {
+        Route::get('/', [OrganizerEventPageController::class, 'index'])->name('organizer.events.index');
+        Route::get('/create', [OrganizerEventPageController::class, 'create'])->name('organizer.events.create');
+        Route::post('/', [OrganizerEventPageController::class, 'store'])->middleware('throttle:20,1')->name('organizer.events.store');
+        Route::get('/{event}/edit', [OrganizerEventPageController::class, 'edit'])->whereNumber('event')
+            ->middleware('can:update,event')->name('organizer.events.edit');
+        Route::patch('/{event}', [OrganizerEventPageController::class, 'update'])->whereNumber('event')
+            ->middleware(['can:update,event', 'throttle:20,1'])->name('organizer.events.update');
+    });
     Route::get('/waitlist', [WaitlistPageController::class, 'index'])->name('waitlist.index');
     Route::prefix('/events/{event}/ticket-types/{ticketType}/waitlist')->whereNumber(['event', 'ticketType'])
         ->middleware('throttle:20,1')->group(function () {

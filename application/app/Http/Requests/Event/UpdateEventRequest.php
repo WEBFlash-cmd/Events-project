@@ -3,11 +3,10 @@
 namespace App\Http\Requests\Event;
 
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Validator;
 
-class UpdateEventRequest extends FormRequest
+class UpdateEventRequest extends StoreEventRequest
 {
     /**
      * Determine if the user is authorized to make this request.
