@@ -1,7 +1,7 @@
 @extends('layouts.site')
 @section('title', 'Заказ №'.$order->id.' — Events')
 @section('content')
-<a class="inline-link back-link" href="{{ route('catalog') }}#catalog">← Афиша мероприятий</a>
+<a class="inline-link back-link" href="{{ route('purchases.orders') }}">← Мои заказы</a>
 <div data-order-status data-status-url="{{ url('/orders/'.$order->id.'/status') }}" data-cancel-url="{{ url('/orders/'.$order->id.'/cancel') }}">
     <div class="account-heading"><p class="eyebrow">ЗАКАЗ №{{ $order->id }}</p><h1>{{ $order->event->title }}</h1><p class="muted">{{ $order->event->venue->name }} · <time data-date="{{ $order->event->starts_at->toIso8601String() }}">{{ $order->event->starts_at->format('d.m.Y H:i') }}</time></p></div>
     <div class="checkout-layout order-layout">

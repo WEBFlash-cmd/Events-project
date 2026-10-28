@@ -141,7 +141,11 @@ if (order) {
         const list = tickets.querySelector('ul');
         list.replaceChildren(...active.map((ticket) => {
             const li = document.createElement('li');
-            li.textContent = ticket.number;
+            const ticketLink = document.createElement('a');
+            ticketLink.className = 'inline-link';
+            ticketLink.href = `/tickets/${encodeURIComponent(ticket.id)}`;
+            ticketLink.textContent = ticket.number;
+            li.append(ticketLink);
             return li;
         }));
         countdown();
