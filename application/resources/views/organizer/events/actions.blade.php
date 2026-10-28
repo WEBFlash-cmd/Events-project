@@ -1,6 +1,7 @@
 <section class="account-card organizer-form event-management" aria-label="Управление мероприятием">
     <h2>Билеты и публикация</h2>
     <a class="page-button" href="{{ route('organizer.tickets.index', $event) }}">Управление типами билетов ↗</a>
+    @can('viewReports', $event)<p><a class="inline-link" href="{{ route('organizer.reports.sales', $event) }}">Отчёты, участники и проверка входа ↗</a></p>@endcan
     @if($event->status === \App\Enums\EventStatus::DRAFT && $event->starts_at->isFuture())
         @can('publish', $event)
             <details><summary>Опубликовать мероприятие</summary><p>Мероприятие станет доступно в афише. Перед публикацией проверьте даты, площадку и добавьте типы билетов.</p>

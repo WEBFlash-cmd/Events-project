@@ -10,6 +10,7 @@ use App\Http\Controllers\PurchasePageController;
 use App\Http\Controllers\WaitlistPageController;
 use App\Http\Controllers\OrganizerEventPageController;
 use App\Http\Controllers\OrganizerTicketTypePageController;
+use App\Http\Controllers\OrganizerReportPageController;
 
 Route::get('/', CatalogController::class)->name('catalog');
 Route::get('/events/{event}', [CheckoutController::class, 'event'])->whereNumber('event')->name('events.show');
@@ -26,6 +27,13 @@ Route::post('/verify-email', [BrowserAuthController::class, 'verify'])->middlewa
 
 Route::middleware(['auth:web', 'auth.session'])->group(function () {
     Route::prefix('/organizer/events')->middleware('can:events.create')->group(function () {
+        Route::prefix('/{event}/reports')->whereNumber(['event', 'ticket'])->middleware('can:viewReports,event')->scopeBindings()->group(function () {
+            Route::get('/sales', [OrganizerReportPageController::class, 'sales'])->name('organizer.reports.sales');
+            Route::get('/participants', [OrganizerReportPageController::class, 'participants'])->name('organizer.reports.participants');
+            Route::get('/check-in', [OrganizerReportPageController::class, 'checkIn'])->name('organizer.reports.check-in');
+            Route::post('/tickets/{ticket}/check-in', [OrganizerReportPageController::class, 'storeCheckIn'])
+                ->middleware(['can:checkIn,ticket,event', 'throttle:60,1'])->name('organizer.reports.check-in.store');
+        });
         Route::post('/{event}/publish', [OrganizerEventPageController::class, 'publish'])->whereNumber('event')
             ->middleware(['can:publish,event', 'throttle:20,1'])->name('organizer.events.publish');
         Route::post('/{event}/cancel', [OrganizerEventPageController::class, 'cancel'])->whereNumber('event')
