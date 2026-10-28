@@ -11,6 +11,6 @@
     <a class="skip-link" href="#main">Перейти к содержимому</a>
     @include('partials.header')
     <main id="main" class="wrap account-main"><noscript><p class="verification-banner">Для работы с аккаунтом включите JavaScript в браузере.</p></noscript>@yield('content')</main>
-    <footer class="site-footer wrap"><a class="brand" href="{{ route('catalog') }}">events<span class="brand-dot">.</span></a><p>Меньше рутины. Больше впечатлений.</p></footer>
+    <footer class="site-footer wrap">@include('partials.brand')<p>Меньше рутины. Больше впечатлений.</p></footer>
 </body>
 </html>

@@ -14,7 +14,7 @@
     <main>
         <section class="hero wrap" aria-labelledby="hero-title">
             <div class="hero-copy">
-                <p class="eyebrow"><span class="live-dot"></span> ВСТРЕЧИ. ОТКРЫТИЯ. ВПЕЧАТЛЕНИЯ.</p>
+                <p class="eyebrow">ВСТРЕЧИ. ОТКРЫТИЯ. ВПЕЧАТЛЕНИЯ.</p>
                 <h1 id="hero-title">Хорошие планы<br>начинаются <em>здесь.</em></h1>
                 <p class="hero-description">Откройте для себя события, ради которых<br class="desktop-break"> хочется выйти из дома.</p>
                 <a class="hero-link" href="#catalog">Найти своё событие ↓</a>
@@ -44,7 +44,7 @@
             </div>
         </section>
     </main>
-    <footer class="site-footer wrap"><a class="brand" href="{{ route('catalog') }}">events<span class="brand-dot">.</span></a><p>Меньше рутины. Больше впечатлений.</p><span>Встречаемся на событиях ↗</span></footer>
+    <footer class="site-footer wrap">@include('partials.brand')<p>Меньше рутины. Больше впечатлений.</p><span>Встречаемся на событиях ↗</span></footer>
     <dialog id="event-dialog" aria-labelledby="detail-title"><div class="dialog-header"><span class="eyebrow">О МЕРОПРИЯТИИ</span><button id="close-dialog" class="page-button" type="button" aria-label="Закрыть описание">✕</button></div><h2 id="detail-title"></h2><p id="detail-meta"></p><p id="detail-description"></p><a id="detail-checkout" class="primary-button checkout-login">Выбрать билеты ↗</a></dialog>
 </body>
 </html>
