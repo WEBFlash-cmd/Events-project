@@ -50,9 +50,18 @@ class AuthService
 
     public function sendVerificationEmail(User $user): void
     {
-        $code = Str::random(6);
-        Cache::put("mail-$code", ['user_id' => $user->id, 'email' => $user->email], now()->addHour());
-        Mail::to($user)->send(new EmailVerification($code));
+        DB::transaction(function () use ($user) {
+            $user = User::query()->lockForUpdate()->find($user->id);
+            if ($user === null || $user->is_blocked || $user->email_verified_at !== null
+                || $user->verification_email_sent_at !== null) {
+                return;
+            }
+            $code = Str::random(6);
+            Cache::put("mail-$code", ['user_id' => $user->id, 'email' => $user->email], now()->addHour());
+            Mail::to($user)->send(new EmailVerification($code));
+            $user->verification_email_sent_at = now();
+            $user->save();
+        });
     }
 
     public function verifyEmail(string $code): void

@@ -8,16 +8,23 @@ use App\Models\Event;
 use App\Models\Order;
 use App\Models\WaitlistEntry;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
-class SendWaitlistOffer implements ShouldQueue
+class SendWaitlistOffer implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
     public int $tries = 3;
     public array $backoff = [10, 60];
+    public int $uniqueFor = 300;
+
+    public function uniqueId(): string
+    {
+        return $this->entryId.':'.$this->orderId;
+    }
 
     public function __construct(public int $entryId, public int $orderId, public int $eventId)
     {

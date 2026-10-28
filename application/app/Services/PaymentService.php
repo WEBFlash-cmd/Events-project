@@ -36,26 +36,35 @@ class PaymentService
         ]);
     }
 
-    public function initialize(Payment $payment): Payment
+    public function initialize(Payment $payment, bool $recoverStalled = false): Payment
     {
         // Commit the reference before contacting the gateway: its webhook may arrive immediately.
-        $claimed = DB::transaction(function () use ($payment) {
-            Event::query()->lockForUpdate()->findOrFail($payment->order->event_id);
+        $claimed = DB::transaction(function () use ($payment, $recoverStalled) {
+            $event = Event::query()->lockForUpdate()->findOrFail($payment->order->event_id);
             $order = Order::query()->lockForUpdate()->findOrFail($payment->order_id);
             $payment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
 
-            if ($payment->status !== 'created') {
+            $stalled = $recoverStalled && $payment->status === 'creating'
+                && $payment->updated_at->lessThanOrEqualTo(now()->subSeconds($this->recoveryDelay()));
+            if ($payment->status !== 'created' && !$stalled) {
                 return false;
             }
 
-            if ($order->status !== 'pending' || $order->expires_at?->lessThanOrEqualTo(now())) {
+            if ($order->status !== 'pending' || $order->expires_at?->lessThanOrEqualTo(now())
+                || $event->status !== EventStatus::PUBLISHED || $event->starts_at->lessThanOrEqualTo(now())) {
                 $this->reservations->expire($order);
+                if ($order->fresh()->status === 'pending') {
+                    $this->reservations->cancel($order);
+                }
                 $payment->update(['status' => 'creation_failed', 'error_code' => 'order_closed']);
 
                 return false;
             }
 
-            $payment->update(['status' => 'creating']);
+            // Reuse the reference: the gateway has a unique (cashbox_id, order_id) constraint.
+            $payment->status = 'creating';
+            $payment->updated_at = now();
+            $payment->save();
 
             return true;
         }, 3);
@@ -110,6 +119,13 @@ class PaymentService
 
             return $payment;
         }, 3);
+    }
+
+    public function recoveryDelay(): int
+    {
+        // Never reclaim an attempt that may still be within the configured HTTP timeout.
+        return max(120, (int) config('payments.recovery_after_seconds', 120),
+            (int) config('payments.timeout') + 60);
     }
 
     public function processWebhook(array $data): void

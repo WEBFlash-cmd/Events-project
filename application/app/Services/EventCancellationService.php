@@ -53,6 +53,8 @@ class EventCancellationService
                             $order->tickets()->update(['refund_required' => true]);
                             $order->tickets()->where('status', 'active')->update(['status' => 'cancelled']);
                         }
+                        $order->event_cancellation_requested_at = now();
+                        $order->save();
                         OrderEventCancelled::dispatch($order);
                     }
                 });
