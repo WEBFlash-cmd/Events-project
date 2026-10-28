@@ -3,11 +3,24 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Role;
+use App\Enums\UserRole;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class UserAccessService
 {
+    public function changeRole(User $user, string $roleName): void
+    {
+        DB::transaction(function () use ($user, $roleName) {
+            $user = User::query()->lockForUpdate()->findOrFail($user->id);
+            $role = Role::query()->where('name', $roleName)->firstOrFail();
+            $user->role = UserRole::from($roleName);
+            $user->rbacRole()->associate($role);
+            $user->save();
+        });
+    }
+
     public function block(User $user): void
     {
         DB::transaction(function () use ($user) {
