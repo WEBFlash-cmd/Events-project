@@ -3,7 +3,8 @@
     <nav class="header-nav" aria-label="Основная навигация">
         <a class="nav-link" href="{{ route('catalog') }}#catalog">Афиша ↗</a>
         @auth('web')
-            @if(session('checkout_order_id'))<a class="nav-link" href="{{ route('checkout.order', session('checkout_order_id')) }}">Последний заказ</a>@endif
+            <a class="nav-link" href="{{ route('purchases.orders') }}">Мои заказы</a>
+            <a class="nav-link" href="{{ route('purchases.tickets') }}">Мои билеты</a>
             <a class="nav-link" href="{{ route('account') }}">Личный кабинет</a>
             <form method="post" action="/logout" data-account-form="logout">@csrf<button class="page-button" type="submit">Выйти</button><p class="form-feedback" role="status" hidden></p></form>
         @else
