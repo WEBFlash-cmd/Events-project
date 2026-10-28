@@ -38,7 +38,7 @@ class BrowserAuthController extends Controller
         $request->session()->regenerate();
         $request->session()->put('password_hash_web', $user->getAuthPassword());
 
-        return response()->json(['redirect' => route('account')]);
+        return response()->json(['redirect' => $request->session()->pull('url.intended', route('account'))]);
     }
 
     public function verify(VerificationCodeRequest $request, AuthService $auth)
