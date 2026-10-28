@@ -1,0 +1,10 @@
+<section class="account-card admin-filters"><form method="get" action="{{ route($isOrders ? 'admin.purchases.orders' : 'admin.purchases.tickets') }}">
+    <label class="account-field">Покупатель или мероприятие<input name="search" type="search" maxlength="150" value="{{ $filters['search'] ?? '' }}" placeholder="Имя, email или название мероприятия"></label>
+    <label class="account-field">Номер заказа<input name="order_id" type="number" min="1" max="2147483647" step="1" value="{{ $filters['order_id'] ?? '' }}"></label>
+    <label class="account-field">Статус<select name="status"><option value="">Все статусы</option>@foreach($isOrders ? ['pending' => 'Ожидает оплаты', 'paid' => 'Оплачен', 'cancelled' => 'Отменён', 'expired' => 'Срок оплаты истёк'] : ['active' => 'Действует', 'used' => 'Использован', 'cancelled' => 'Отменён'] as $value => $label)<option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>@endforeach</select></label>
+    <label class="account-field">ID покупателя<input name="user_id" type="number" min="1" step="1" value="{{ $filters['user_id'] ?? '' }}"></label>
+    <label class="account-field">ID мероприятия<input name="event_id" type="number" min="1" step="1" value="{{ $filters['event_id'] ?? '' }}"></label>
+    <label class="account-field">Требуется возврат<select name="refund_required"><option value="">Все записи</option><option value="1" @selected((string) ($filters['refund_required'] ?? '') === '1')>Да</option><option value="0" @selected((string) ($filters['refund_required'] ?? '') === '0')>Нет</option></select></label>
+    @unless($isOrders)<label class="account-field">Полный номер билета (UUID)<input name="number" maxlength="36" value="{{ $filters['number'] ?? '' }}" placeholder="11111111-1111-4111-8111-111111111111"></label>@endunless
+    <div class="order-actions"><button class="page-button" type="submit">Найти {{ $isOrders ? 'заказы' : 'билеты' }}</button><a class="inline-link" href="{{ route($isOrders ? 'admin.purchases.orders' : 'admin.purchases.tickets') }}">Сбросить</a></div>
+</form></section>

@@ -15,6 +15,7 @@ use App\Http\Controllers\AdminUserPageController;
 use App\Http\Controllers\AdminCategoryPageController;
 use App\Http\Controllers\AdminVenuePageController;
 use App\Http\Controllers\AdminEventPageController;
+use App\Http\Controllers\AdminPurchasePageController;
 
 Route::get('/', CatalogController::class)->name('catalog');
 Route::get('/events/{event}', [CheckoutController::class, 'event'])->whereNumber('event')->name('events.show');
@@ -30,6 +31,10 @@ Route::view('/verify-email', 'auth.verify')->name('verification');
 Route::post('/verify-email', [BrowserAuthController::class, 'verify'])->middleware('throttle:10,1');
 
 Route::middleware(['auth:web', 'auth.session'])->group(function () {
+    Route::get('/admin/orders', [AdminPurchasePageController::class, 'orders'])
+        ->middleware('can:viewAny,App\Models\Order')->name('admin.purchases.orders');
+    Route::get('/admin/tickets', [AdminPurchasePageController::class, 'tickets'])
+        ->middleware('can:viewAny,App\Models\Ticket')->name('admin.purchases.tickets');
     Route::prefix('/admin/events')->middleware('can:viewAny,App\Models\Event')->group(function () {
         Route::get('/', [AdminEventPageController::class, 'index'])->name('admin.events.index');
         Route::get('/{event}', [AdminEventPageController::class, 'show'])->whereNumber('event')
