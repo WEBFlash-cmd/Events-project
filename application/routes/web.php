@@ -14,6 +14,7 @@ use App\Http\Controllers\OrganizerReportPageController;
 use App\Http\Controllers\AdminUserPageController;
 use App\Http\Controllers\AdminCategoryPageController;
 use App\Http\Controllers\AdminVenuePageController;
+use App\Http\Controllers\AdminEventPageController;
 
 Route::get('/', CatalogController::class)->name('catalog');
 Route::get('/events/{event}', [CheckoutController::class, 'event'])->whereNumber('event')->name('events.show');
@@ -29,6 +30,13 @@ Route::view('/verify-email', 'auth.verify')->name('verification');
 Route::post('/verify-email', [BrowserAuthController::class, 'verify'])->middleware('throttle:10,1');
 
 Route::middleware(['auth:web', 'auth.session'])->group(function () {
+    Route::prefix('/admin/events')->middleware('can:viewAny,App\Models\Event')->group(function () {
+        Route::get('/', [AdminEventPageController::class, 'index'])->name('admin.events.index');
+        Route::get('/{event}', [AdminEventPageController::class, 'show'])->whereNumber('event')
+            ->middleware('can:view,event')->name('admin.events.show');
+        Route::delete('/{event}', [AdminEventPageController::class, 'destroy'])->whereNumber('event')
+            ->middleware(['can:delete,event', 'throttle:20,1'])->name('admin.events.destroy');
+    });
     Route::prefix('/admin/categories')->middleware('can:categories.view')->group(function () {
         Route::get('/', [AdminCategoryPageController::class, 'index'])->name('admin.categories.index');
         Route::get('/create', [AdminCategoryPageController::class, 'create'])->middleware('can:categories.create')->name('admin.categories.create');
